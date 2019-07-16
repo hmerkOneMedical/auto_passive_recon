@@ -55,5 +55,5 @@ def companyBasicInfo(name):
         res =  yaml.safe_load(response.text)['cards']
 
         return formatResponse(res)
-    except e:
+    except Exception as e:
         return 'Scraping crunchbase failed.'

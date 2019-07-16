@@ -6,12 +6,10 @@ import sublist3r
 import whois
 import googleScraper
 import json
-import shodan
+from queryShodan import *
 
 from helpers import *
-#==================
 
-SHODAN_API_KEY = os.environ['SHODAN_API_KEY']
 
 #==================
 companyUrl = formatInput('URL')
@@ -33,7 +31,12 @@ if (runSublist3r == 'yes'):
     try:
         subdomains = sublist3r.main(companyUrl, subdomainOutFile, ports= None, silent=False, verbose=True, engines=None)
         formatResponse('SUBDOMAIN COUNT:', str(len(subdomains)), [])
-    except e:
+
+        if len(subdomains) > 0:
+            ipResults = getDomainVulnerabilites(subdomains)
+            formatResponse('Shodan Identified the following CVEs', ipResults)
+
+    except Exception as e:
         print(e)
 
 
@@ -41,31 +44,25 @@ formatResponse('WhoIs Results', json.loads(domain.encode('utf-8')), [])
 formatResponse('Linkedin Hits for Currently Employed In Security/Cyber', scrape_employees_query, unwanted_keys)
 formatResponse('Linkedin Hits for Security/Cyber Jobs Listed', scrape_jobs_query, unwanted_keys)
 
-
 runShodan = formatInput('Would you like to run Shodan? (yes/no)')
-
-if runShodan == 'yes':
+while runShodan == 'yes':
     searchQuery = formatInput('Modify Search Query? (Default: '+companyName+')')
     if not searchQuery:
         searchQuery = companyName
 
     runVerbose = formatInput('Verbose? (yes/no)')
-    shodanapi = shodan.Shodan(SHODAN_API_KEY)
+    
     try:
-            # Search Shodan
-            results = shodanapi.search(searchQuery)
+        results = shodanQuery(searchQuery)
 
-            # Show the results
-            print('Results found: {}'.format(results['total']))
-            if runVerbose == 'yes':
-                formatResponse('Shodan Results Found: ', results['matches'], ['html', 'data', 'references'])
-            else:
-                try:
-                    print(results['matches'][0].keys())
-                except:
-                    print('No matches.')
+        print('Results found: {}'.format(results['total']))
+        if runVerbose == 'yes':
+            formatResponse('Shodan Results Found: ', results['matches'], ['html', 'data', 'references'])
     except shodan.APIError, e:
-            print('Error: {}'.format(e))
+        print('Error: {}'.format(e))
 
+    runShodan = formatInput('Would you like to run Shodan again? (yes/no)')
 else:
-    print('Not running shodan... ')
+    print('Done with shodan')
+
+
