@@ -54,13 +54,10 @@ def pprint(log, indent, unwanted_keys):
         print(str(tabs)+str(log))
 
 def resolveDNS(domain): 
-    resolver = dns.resolver.Resolver(); 
-    res = resolver.query(domain , "A")
-    formatted = set([])
-    for item in res:
-        formatted.update([str(item)])
-
-    return formatted
+    #resolver = dns.resolver.Resolver(); 
+    res = dns.resolver.query(domain , "A")
+    dns_records = [ip.address for ip in res]
+    return dns_records
 
 def domainsToIPs(domains):
     ipSet = set([])
@@ -69,6 +66,6 @@ def domainsToIPs(domains):
             ipMatches = resolveDNS(domain)
             ipSet.update(ipMatches)
         except Exception as e:
-            print(e)
+            pass
 
     return ipSet

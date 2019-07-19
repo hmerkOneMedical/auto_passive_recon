@@ -8,7 +8,6 @@ SHODAN_API_KEY = os.environ['SHODAN_API_KEY']
 api = shodan.Shodan(SHODAN_API_KEY)
 
 def getDomainVulnerabilites(subdomains):
-    print('querying for vulns')
     ips = list(domainsToIPs(subdomains))
     ipResults = {}
     for ip in ips:

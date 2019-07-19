@@ -40,12 +40,13 @@ def parse_results(html, keyword):
     return found_results
 
 
-def query(search_term, number_results, language_code='en'):
+def query(search_term, number_results):
     try:
-        keyword, html = fetch_results(search_term, number_results, language_code)
+        keyword, html = fetch_results(str(search_term), number_results, 'en')
         results = parse_results(html, keyword)
         return results
-    except AssertionError:
+    except AssertionError as e:
+        print(e)
         raise Exception("Incorrect arguments parsed to function")
     except requests.HTTPError:
         raise Exception("You appear to have been blocked by Google")

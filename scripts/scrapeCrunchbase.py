@@ -1,6 +1,8 @@
 import requests
 import yaml
 
+from helpers import *
+
 ### HOW TO USE:
 # import scrape
 # scrape.companyBasicInfo(NAME_OF_COMPANY)
@@ -18,7 +20,7 @@ headers = {
     }
 
 
-def formatResponse(res):
+def formatBasicsResponse(res):
     companyBasics = (res['overview_company_fields'].values())
     locations = (res['overview_fields']['location_group_identifiers'])
     founded_on = res['overview_fields']['founded_on']['value']
@@ -35,7 +37,6 @@ def formatResponse(res):
     for loc in locations:
         loc = loc['value']
         location += loc + '; '
-
 
     for f in range(len(founders)):
         founders[f] = founders[f]['value']
@@ -54,6 +55,20 @@ def companyBasicInfo(name):
         response = requests.request("GET", url, headers=headers)    
         res =  yaml.safe_load(response.text)['cards']
 
-        return formatResponse(res)
+        return formatBasicsResponse(res)
     except Exception as e:
-        return 'Scraping crunchbase failed.'
+        print('Scraping crunchbase failed.')
+        return None
+
+
+def runBasics(companyName):
+    run = True
+    while run:
+        basics = (companyBasicInfo(companyName))
+        formatResponse('Basic Company Information (Crunchbase)', basics, [])
+        if not basics:
+            companyName = formatInput('Update company name to try again:')    
+            if len(companyName) == 0:
+                run = False
+        else:
+            run = False
