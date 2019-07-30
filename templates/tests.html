@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+
+<link
+  href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"
+  rel="stylesheet"
+  id="bootstrap-css"
+/>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+<html>
+  <head>
+    <title>Tests</title>
+    <link rel="stylesheet" type="text/css" href="../static/styles.css" />
+  </head>
+  <body>
+      <h1>Jump to Information Quickly!</h1>
+      <a href="#targetname">LinkedIn</a>
+      <hr>
+
+      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=security@onemedical.com" rel="noopener noreferrer" target="_blank">Report to OneMedical</a>
+
+
+    <div class="container" >
+        <a name="targetname"></a>
+        <h2>Title</h2>
+      <table class="table" style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
+        <tr>
+          <th scope="col">Title</th>
+          <th scope="col" style="width: 100px;">LinkedIn</th>
+          <th scope="col">Description</th>
+        </tr>
+        {% for result in data %}
+        <tr>
+          <td>{{ result['title'] }}</td>
+          <td><a href={{ result['link'] }}>LinkedIn</a></td>
+          <td>{{ result['description'] }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+      <table class="table" style="width: 40%;display: inline-block;padding-left:5%; vertical-align:top;">
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col" style="width: 100px;">LinkedIn</th>
+              <th scope="col">Description</th>
+            </tr>
+            {% for result in data %}
+            <tr>
+              <td>{{ result['title'] }}</td>
+              <td><a href={{ result['link'] }}>LinkedIn</a></td>
+              <td>{{ result['description'] }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+    </div>
+    <!-- Collapsable List: -->
+    <table class="table table-condensed" style="border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th>Subdomain</th>
+                    <th>IP Address</th>
+                    <th>Vulnerabilities</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in domainData %}
+                <tr data-toggle="collapse" data-target="#object-{{ loop.index }}" class="accordion-toggle">
+                    <td>{{result['url']}}</td>
+                    <td>{{result['ip']}}</td>
+                    <td class="text-error">{{result['vulns']}}</td>
+                </tr>
+                <tr >
+                    <td colspan="6" class="hiddenRow"><div class="accordian-body collapse" id="object-{{ loop.index }}"><iframe src={{ result['url'] }} width = "100%" height = "200px" style="resize: both;"></iframe>
+                    </div> </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    
+  </body>
+</html>
+
+

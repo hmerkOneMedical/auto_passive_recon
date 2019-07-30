@@ -1,9 +1,14 @@
 body {
-    padding-top: 100px;
-    margin-top: 100px;
+  margin: 30px;
+  padding: 20px;
 }
 
-h1 {
-    padding: 50px;
-    left: 15px;
+.table {
+  word-wrap: break-word;
+  table-layout: fixed;
+  width: 95%;
+}
+
+.hiddenRow {
+  padding: 0 !important;
 }

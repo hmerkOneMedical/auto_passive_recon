@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+
+<link
+  href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"
+  rel="stylesheet"
+  id="bootstrap-css"
+/>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+<html>
+  <head>
+    <title>Report</title>
+    <link rel="stylesheet" type="text/css" href="../static/styles.css" />
+  </head>
+  <body>
+    <h3><a href="/">Start Over</a></h3>
+    <a href="/recon" download><h3>Download Report</h3>
+    <hr>
+    <h1>Passive Recon Report: {{ companyName }}.</h1>
+    <hr>
+    <h3>Company Details</h3>
+    <div>
+        <div style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
+          {% for det in details['founders'] %}
+            {{det}}
+            <br>
+          {% endfor %}
+        </div>
+        <div style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
+          {{details['company']}}
+        </div>
+        <div style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
+          {{details['founded_on']}}
+        </div>
+        <div style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
+          {{details['location']}}
+        </div>
+        <div style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
+          {% for det in details['online'] %}
+            <a href="{{details['online'][det]}}">{{det}}: {{details['online'][det]}}</a>
+            <br>
+          {% endfor %}
+        </div>
+        <h5>Visit <a href="https://haveibeenpwned.com">HaveIBeenPwned</a> to check if the founder emails have been compromised: {{founderEmails}}</h5>
+    </div>
+    <hr>
+    <div style="display: inline-block;width: 90%;">
+        <h3>Security Breaches</h3>
+        <h5>Are there previous security breaches?</h5>
+        <iframe style="outline:none;width: 500px;height: 500px;" src="https://www.google.com/search?igu=1&ei=&q={{companyName}}+breach" style=></iframe>
+    </div>
+    <hr>
+    <h3>Domain Details:</h3>
+     <!-- Collapsable Subdomain List: -->
+     <table class="table table-condensed" style="border-collapse:collapse; width:90%;margin:20px;">
+        <thead>
+            <tr>
+                <th>Subdomain</th>
+                <th>IP Address</th>
+                <th>Ports</th>
+                <th>Vulnerabilities</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in domainData %}
+            <tr data-toggle="collapse" data-target="#object-{{ loop.index }}" class="accordion-toggle">
+                <td><a href="https://{{result['url']}} ">
+                    {{result['url']}} 
+                </a></td>
+                <td>{{result['ips']}}</td>
+                <td>{{result['ports']}}</td>
+                <td class="text-error">
+                  {% for vuln in result['vulns'] %}
+                  <a href="https://nvd.nist.gov/vuln/detail/{{vuln}}">
+                    {{vuln}}
+                  </a> {% endfor %}
+                </td>
+            </tr>
+            <tr >
+                <td colspan="6" class="hiddenRow"><div class="accordian-body collapse" id="object-{{ loop.index }}"><iframe src=https://{{ result['url'] }} width = "100%" height = "200px" style="resize: both;"></iframe>
+                </div> </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <hr>
+    <div class="container" >
+    <h2>LinkedIn Details</h2>
+    
+        <a name="targetname"></a>
+        <div style="width: 49%; display: inline-block; padding-right:5%; vertical-align:top;">
+          <h3>Hiring</h3>
+          <table class="table">
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col" style="width: 100px;">LinkedIn</th>
+              <th scope="col">Description</th>
+            </tr>
+            {% for result in jobs %}
+            <tr>
+              <td>{{ result['title'] }}</td>
+              <td><a href={{ result['link'] }}>LinkedIn</a></td>
+              <td>{{ result['description'] }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+        <div style="width: 49%; display: inline-block; padding-right:5%; vertical-align:top;">
+          <h3>Current Employees</h3>
+          <table class="table">
+            <tr>
+              <th scope="col">Title</th>
+              <th scope="col" style="width: 100px;">LinkedIn</th>
+              <th scope="col">Description</th>
+            </tr>
+            {% for result in employees %}
+            <tr>
+              <td>{{ result['title'] }}</td>
+              <td><a href={{ result['link'] }}>LinkedIn</a></td>
+              <td>{{ result['description'] }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </a>
+  </body>
+</html>

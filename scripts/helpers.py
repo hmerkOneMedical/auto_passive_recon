@@ -13,8 +13,8 @@ def formatInput(promter):
     return raw_input(BOLD + promter+ END + ' \n>>  ')
 
 def formatResponse(title, log = '', unwanted_keys = []):
-    print("%s==========================%s" % (Gr, W))
-    print("%s%s%s%s%s" % (B, BOLD, title, W, END))
+    print('%s==========================%s' % (Gr, W))
+    print('%s%s%s%s%s' % (B, BOLD, title, W, END))
     print(pprint(log, 0, unwanted_keys))
 
 def printBoldSecurity(log):
@@ -55,17 +55,17 @@ def pprint(log, indent, unwanted_keys):
 
 def resolveDNS(domain): 
     #resolver = dns.resolver.Resolver(); 
-    res = dns.resolver.query(domain , "A")
+    res = dns.resolver.query(domain , 'A')
     dns_records = [ip.address for ip in res]
     return dns_records
 
 def domainsToIPs(domains):
-    ipSet = set([])
+    ipDict = {}
     for domain in domains:
         try:
-            ipMatches = resolveDNS(domain)
-            ipSet.update(ipMatches)
+            ipDict[domain] = []
+            ipDict[domain] = resolveDNS(domain)
         except Exception as e:
             pass
 
-    return ipSet
+    return ipDict

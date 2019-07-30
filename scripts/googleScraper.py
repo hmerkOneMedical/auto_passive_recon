@@ -47,10 +47,10 @@ def query(search_term, number_results):
         return results
     except AssertionError as e:
         print(e)
-        raise Exception("Incorrect arguments parsed to function")
+        raise Exception('Incorrect arguments parsed to function')
     except requests.HTTPError:
-        raise Exception("You appear to have been blocked by Google")
+        raise Exception('You appear to have been blocked by Google')
     except requests.RequestException:
-        raise Exception("Appears to be an issue with your connection")
+        raise Exception('Appears to be an issue with your connection')
 
 

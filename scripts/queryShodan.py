@@ -8,14 +8,67 @@ SHODAN_API_KEY = os.environ['SHODAN_API_KEY']
 api = shodan.Shodan(SHODAN_API_KEY)
 
 def getDomainVulnerabilites(subdomains):
-    ips = list(domainsToIPs(subdomains))
-    ipResults = {}
-    for ip in ips:
-        try:
-            res = ((api.host(ip)))
-            ipResults[ip] = res['vulns']
-        except:
-            pass
+    domainDict = domainsToIPs(subdomains)
+    ipResults = []
+    for key, value in domainDict.iteritems():
+        vulns = []
+        domainIps = domainDict[key]
+        ports = []
+
+        if len(domainIps) == 0:
+            continue; # if site does not have an ip address, do not add it to reported subdomains!
+
+        liveURL = False
+        for ip in domainIps:
+            try:
+                res = api.host(ip)
+                #[u'data', u'city', u'region_code', u'tags', u'ip', u'isp', u'area_code', u'dma_code', u'last_update', u'country_code3', u'latitude', u'hostnames', u'postal_code', u'longitude', u'country_code', u'org', u'country_name', u'ip_str', u'os', u'asn', u'ports']
+                if 'ports' in res.keys():
+                    print('ports exists')
+                    ports.extend(res['ports'])
+                    liveURL = True
+
+                if 'vulns' in res.keys():
+                    print(res['vulns'])                    
+                    vulns.extend(res['vulns'])
+                    print(vulns)
+                    liveURL = True
+
+                if 'data' in res.keys():
+                    liveURL = True
+                    try:
+                        for x in res['data']:
+                            print x.keys()
+                            if 'vulns' in x['opts']:
+                                print('updating!')
+                                print x['opts']['vulns']
+                                try:
+                                    vulns = vulns.extend(x['opts']['vulns'])
+                                except:
+                                    print 'here'
+                                    pass
+                            if 'http' in x.keys():
+                                print '[+] HTTP port present:\t'
+                                print '\tTitle: %s' % x['http']['title']
+                                print '\tRobots: %s' % x['http']['robots']
+                                print '\tServer: %s' % x['http']['server']
+                                print '\tComponents: %s' % x['http']['components']
+                                print '\tSitemap: %s' % x['http']['sitemap']
+
+                                liveURL = True
+                    except:
+                        pass
+
+            except:
+                pass
+
+        if liveURL:
+            if vulns == None:
+                vulns = []
+
+            addition = {'url': key, 'ips': domainDict[key], 'vulns': vulns, 'ports': ports}
+            ipResults.append(addition)
+            print(addition)
 
     return ipResults
 

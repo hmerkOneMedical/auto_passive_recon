@@ -1,0 +1,13 @@
+import os
+import requests
+
+HUNTER_API_KEY = os.environ['HUNTER_API_KEY']
+
+def getFounderEmail(domain, founder_name):
+    hunter_url = 'https://api.hunter.io/v2/email-finder?domain={}&full_name={}&api_key={}'.format(domain,founder_name, HUNTER_API_KEY)
+
+    response = requests.get(hunter_url)
+    response = response.json() 
+    return response['data']['email']
+
+#getFounderEmail('asana.com', 'Dustin Moskovitz')
