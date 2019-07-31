@@ -56,13 +56,7 @@ def frame():
 
     driver.close()
 
-    return '<img src="'+decodedScreenie+'"/>'
-
-
-    #return '<html><img src="../hi.png"/></html>'
-
-    #print(url)
-    #return '<html><body><h1>Hello World</h1></body></html>' 
+    return '<div style="max-width: 100%; height: auto"><img style="max-width: 100%; height: auto" src="'+decodedScreenie+'"/></div>'
 
 @app.route('/linkPreviews', methods=['GET'])
 def linkPreviews():
