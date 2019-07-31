@@ -11,19 +11,27 @@ Passive recon script integrating several tools:
 
 ```
 export SHODAN_API_KEY=xxx # find in shodan portal
+export HUNTER_API_KEY=xxx # make a free account on hunter.io
+
+brew install chromedriver
+brew install Caskroom/versions/google-chrome-canary
+
 pip install -r requirements.txt
 ```
 
 ## Running Passive Recon
 
 Interactively Run in command line:
+
 ```
 cd scripts
 python recon.py
 ```
 
 Launch Flask app:
+
 ```
 python app.py
 ```
-Visit 0.0.0.0/3000 
+
+Visit 0.0.0.0/3000

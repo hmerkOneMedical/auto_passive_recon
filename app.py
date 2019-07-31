@@ -6,7 +6,6 @@ from scripts.recon import runRecon
 import string
 import os
 import requests
-import urllib2
 from selenium import webdriver
 import base64
 import uuid
@@ -38,18 +37,14 @@ def index():
 @app.route('/frame')
 def frame():
     url = request.args.get('url')
-    # req = urllib2.Request(url)
-    # response = urllib2.urlopen(req)
-    # the_page = response.read()
     print(url)
     options = webdriver.ChromeOptions()
     options.add_argument('--ignore-certificate-errors')
     options.add_argument("--test-type")
-    #options.binary_location = "/usr/bin/chromium"
     driver = webdriver.Chrome(chrome_options=options)
 
     driver.get(url)
-    driver.save_screenshot("static/screenshots/"+str(uuid.uuid1())+".png")
+    #driver.save_screenshot("static/screenshots/"+str(uuid.uuid1())+".png")
     screenshot = driver.get_screenshot_as_png()
     image_64_encoded = base64.encodestring(screenshot)
     decodedScreenie = "data:image/png;base64,%s" % image_64_encoded.decode("utf8")
