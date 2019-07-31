@@ -15,14 +15,28 @@ headers = {
     'cache-control': 'no-cache'
     }
 
+def convertCount(value):
+    try:
+        value = int(value)
+    except: 
+        value = "(+)"
+    
+    return str(value)
 
 def formatBasicsResponse(res):
     companyBasics = (res['overview_company_fields'].values())
     locations = (res['overview_fields']['location_group_identifiers'])
     founded_on = res['overview_fields']['founded_on']['value']
-    founders = res['overview_fields']['founder_identifiers']
+    founders = []
+    try: 
+        founders = res['overview_fields']['founder_identifiers']
+    except:
+        print('no founders found')
     online = res['overview_fields2']
 
+    employeeCount = res['overview_fields']['num_employees_enum']
+    employeeCount = employeeCount.split('_')
+    employeeCount = convertCount(employeeCount[1]) + ' - ' + convertCount(employeeCount[2])
 
     for b in range(len(companyBasics)):
         if not isinstance(companyBasics[b], str):
@@ -42,12 +56,15 @@ def formatBasicsResponse(res):
         if not isinstance(online[s], str):
             online[s] = online[s]['value']
 
-    return {'company': companyBasics, 'location': location, 'founded_on': founded_on, 'founders': founders, 'online': online}
+    return {'company': companyBasics, 'location': location, 'founded_on': founded_on, 'founders': founders, 'online': online, 'num_employees': employeeCount}
 
 def companyBasicInfo(name):
     print(name)
+    name = name.replace(' ', '-')
     url = 'https://www.crunchbase.com/v4/data/entities/organizations/' + name + \
     '?field_ids=%5B%22identifier%22,%22layout_id%22,%22facet_ids%22,%22title%22,%22short_description%22,%22is_unlocked%22%5D&layout_mode=view'
+
+    print(url)
 
     try:
         response = requests.request('GET', url, headers=headers)    
@@ -56,6 +73,7 @@ def companyBasicInfo(name):
         return formatBasicsResponse(res)
     except Exception as e:
         print('Scraping crunchbase failed.')
+        print(e)
         return None
 
 

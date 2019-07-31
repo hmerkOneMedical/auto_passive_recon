@@ -1,11 +1,23 @@
 import shodan
 import os
 import json
+import requests
 
 from helpers import *
 
 SHODAN_API_KEY = os.environ['SHODAN_API_KEY']
 api = shodan.Shodan(SHODAN_API_KEY)
+
+def dns_resolve(hostnames):
+    url = 'https://api.shodan.io/dns/resolve?hostnames={}&key={}'.format(hostnames, SHODAN_API_KEY)
+
+    # Sample Response:
+    #  {
+    #  "google.com": "74.125.227.230",
+    #  "bing.com": "204.79.197.200"
+    # }
+    return (requests.get(url)).json()
+
 
 def getDomainVulnerabilites(subdomains):
     domainDict = domainsToIPs(subdomains)
@@ -24,14 +36,11 @@ def getDomainVulnerabilites(subdomains):
                 res = api.host(ip)
                 #[u'data', u'city', u'region_code', u'tags', u'ip', u'isp', u'area_code', u'dma_code', u'last_update', u'country_code3', u'latitude', u'hostnames', u'postal_code', u'longitude', u'country_code', u'org', u'country_name', u'ip_str', u'os', u'asn', u'ports']
                 if 'ports' in res.keys():
-                    print('ports exists')
                     ports.extend(res['ports'])
                     liveURL = True
 
                 if 'vulns' in res.keys():
-                    print(res['vulns'])                    
                     vulns.extend(res['vulns'])
-                    print(vulns)
                     liveURL = True
 
                 if 'data' in res.keys():

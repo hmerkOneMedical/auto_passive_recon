@@ -6,10 +6,19 @@ from scripts.recon import runRecon
 import string
 import os
 import requests
+import urllib2
+from selenium import webdriver
+import base64
+import uuid
 
-app = Flask(__name__)
+
+app = Flask(__name__, static_url_path='/static')
 
 printable = set(string.printable)
+
+@app.route('/printing_test')
+def printing_test():
+    return render_template('printing_test.html')
 
 @app.route('/tests')
 def tests():
@@ -24,6 +33,36 @@ def tests():
 @app.route('/')
 def index():
     return render_template('index.html')
+    
+
+@app.route('/frame')
+def frame():
+    url = request.args.get('url')
+    # req = urllib2.Request(url)
+    # response = urllib2.urlopen(req)
+    # the_page = response.read()
+    print(url)
+    options = webdriver.ChromeOptions()
+    options.add_argument('--ignore-certificate-errors')
+    options.add_argument("--test-type")
+    #options.binary_location = "/usr/bin/chromium"
+    driver = webdriver.Chrome(chrome_options=options)
+
+    driver.get(url)
+    driver.save_screenshot("static/screenshots/"+str(uuid.uuid1())+".png")
+    screenshot = driver.get_screenshot_as_png()
+    image_64_encoded = base64.encodestring(screenshot)
+    decodedScreenie = "data:image/png;base64,%s" % image_64_encoded.decode("utf8")
+
+    driver.close()
+
+    return '<img src="'+decodedScreenie+'"/>'
+
+
+    #return '<html><img src="../hi.png"/></html>'
+
+    #print(url)
+    #return '<html><body><h1>Hello World</h1></body></html>' 
 
 @app.route('/linkPreviews', methods=['GET'])
 def linkPreviews():
@@ -36,12 +75,6 @@ def recon():
     companyURL = request.form['companyURL']
     companyName = request.form['companyName']
     response = runRecon(companyURL, companyName, None, False)
-
-    # example response
-    #response['vulns'] = {'52.214.233.75': ['CVE-2010-1256', 'CVE-2010-2730', 'CVE-2010-3972', 'CVE-2010-1899', 'CVE-2012-2531'], '52.31.227.42': ['CVE-2014-0117', 'CVE-2014-0118', 'CVE-2016-0736', 'CVE-2015-3185', 'CVE-2015-3184', 'CVE-2018-1312', 'CVE-2016-4975', 'CVE-2016-8612', 'CVE-2014-0226', 'CVE-2014-3523', 'CVE-2017-15710', 'CVE-2017-15715', 'CVE-2013-6438', 'CVE-2017-7679', 'CVE-2019-11040', 'CVE-2018-17199', 'CVE-2014-8109', 'CVE-2017-9798', 'CVE-2016-2161', 'CVE-2019-11039', 'CVE-2019-11038', 'CVE-2018-19935', 'CVE-2014-0231', 'CVE-2013-4352', 'CVE-2019-0220', 'CVE-2014-0098', 'CVE-2018-1283', 'CVE-2016-8743']}
-    respString = "Recon Responses:\nStart over: <br/> <a href='/'>Back Home</a>"
-
-    #vulns = json.dumps(response['domainResults'])
     details = response['details']
     domainData = response['domainResults']
     employees = response['employees']

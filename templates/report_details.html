@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
 
 <link
   href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"
@@ -7,6 +7,11 @@
   id="bootstrap-css"
 />
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>
+
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
 <!------ Include the above in your HEAD tag ---------->
 <html>
   <head>
@@ -14,53 +19,115 @@
     <link rel="stylesheet" type="text/css" href="../static/styles.css" />
   </head>
   <body>
-    <h3><a href="/">Start Over</a></h3>
-    <a href="/recon" download><h3>Download Report</h3>
+    <h4><a href="/">Start Over</a></h4>
     <hr>
-    <h1>Passive Recon Report: {{ companyName }}.</h1>
+    <h1>Passive Recon Report: {{ companyName }}</h1>
     <hr>
-    <h3>Company Details</h3>
-    <div>
-        <div style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
-          {% for det in details['founders'] %}
-            {{det}}
-            <br>
-          {% endfor %}
+        <div class="card" style="width: 45em; display: inline-block; ">
+          <div class="card-body">
+            <h3 class="card-title">Company Details</h3>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Founded Date: {{details['founded_on']}}</li>
+                <li class="list-group-item">Founders:
+                    {% for det in details['founders'] %}
+                      {{det}}; 
+                    {% endfor %}
+                </li>
+                <li class="list-group-item">Private/Public: {{details['company']}}</li>
+                <li class="list-group-item">Number of Employees: {{details['num_employees']}}</li>
+                <li class="list-group-item">Headquarters: {{details['location']}}</li>
+                <li class="list-group-item">Online Presence: <br>
+                    {% for det in details['online'] %}
+                    <a href="{{details['online'][det]}}">{{details['online'][det]}}</a>
+                    <br>
+                  {% endfor %}
+                </li>
+              </ul>
+          </div>
         </div>
-        <div style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
-          {{details['company']}}
+
+        <!-- Report details -->
+        <div class="card" style="width: 30em; display: inline-block; vertical-align:top;">
+            <div class="card-body">
+              <h3 class="card-title">Report Summary</h3>
+              <ul class="list-group list-group-flush">
+                  <li class="list-group-item" id="toggle_breach_text" style="display:none;">This company has had security breaches in the past. We estimate the breach was significant as a public release was made.</li>
+                  <li class="list-group-item" id="toggle_pwned_text" style="display:none;">The founder's email was associated with other security breaches. This can indicate targetting, poor password rotation, or weak passwords.</li>
+                  <li class="list-group-item" id="toggle_staff_text" style="display:none;">There appears to be a lack of security engineers. This can present a significant security risk and can pose challenges in uncovering security breaches or timely remediating exploitable flaws in their environment.</li>
+                  <li class="list-group-item" id="toggle_vuln_text" style="display:none;">Our automated testing discovered vulnerabilites. See below for details.</li>
+                  {% if domainData|length > 100 %}
+                    <li class="list-group-item" id="toggle_vuln_text" style="display:none;">With {{domainData|length}} (sub)domains, security risk increases.</li>
+                  {% endif %}
+                </ul>
+            </div>
+          </div>
+          
+          <hr>
+          <!-- -->
+       
+        <h3>Non-Automated Checks:</h3>
+        <div>
+            <h5 style="display: inline-block">Have founder emails been compromised? Visit <a href="https://haveibeenpwned.com">HaveIBeenPwned</a> to check {% for founder in founderEmails %} {{founder}} {% endfor %} </h5>
+            <input
+              type="checkbox"
+              data-toggle="toggle"
+              data-on="Yes"
+              data-off="No"
+              id="toggle_pwned"
+            />
+          <div style="display: inline-block;width: 90%;">
+            <h5 style="display: inline-block;">Have there been previous security breaches?</h5>
+            <input
+              type="checkbox"
+              data-toggle="toggle"
+              data-on="Yes"
+              data-off="No"
+              id="toggle_breach"
+            />
+          </div>
+            <iframe style="outline:none;width: 500px;height: 500px;" src="https://www.google.com/search?igu=1&ei=&q={{companyName}}+breach" style=></iframe>
+          </div>
         </div>
-        <div style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
-          {{details['founded_on']}}
-        </div>
-        <div style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
-          {{details['location']}}
-        </div>
-        <div style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
-          {% for det in details['online'] %}
-            <a href="{{details['online'][det]}}">{{det}}: {{details['online'][det]}}</a>
-            <br>
-          {% endfor %}
-        </div>
-        <h5>Visit <a href="https://haveibeenpwned.com">HaveIBeenPwned</a> to check if the founder emails have been compromised: {{founderEmails}}</h5>
-    </div>
     <hr>
-    <div style="display: inline-block;width: 90%;">
-        <h3>Security Breaches</h3>
-        <h5>Are there previous security breaches?</h5>
-        <iframe style="outline:none;width: 500px;height: 500px;" src="https://www.google.com/search?igu=1&ei=&q={{companyName}}+breach" style=></iframe>
-    </div>
-    <hr>
+
+    <script> 
+      $(function() {
+        $('#toggle_breach').change(function() {
+          $('#toggle_breach_text').toggle();
+        })
+      })
+      $(function() {
+        $('#toggle_pwned').change(function() {
+          $('#toggle_pwned_text').toggle();
+        })
+      })
+      </script>
+
     <h3>Domain Details:</h3>
+    Vulnerabilities detected in enumerated (sub)domains:
+    <input
+      type="checkbox"
+      data-toggle="toggle"
+      data-on="Yes"
+      data-off="No"
+      id="toggle_vuln"
+    />
+    <script>
+      $(function() {
+        $('#toggle_vuln').change(function() {
+          $('#toggle_vuln_text').toggle();
+        })
+      })
+    </script>
      <!-- Collapsable Subdomain List: -->
-     <table class="table table-condensed" style="border-collapse:collapse; width:90%;margin:20px;">
+     <table class="table table-condensed" style="border-collapse:collapse;">
         <thead>
-            <tr>
-                <th>Subdomain</th>
-                <th>IP Address</th>
-                <th>Ports</th>
-                <th>Vulnerabilities</th>
-            </tr>
+          <tr>
+            <th>Subdomain</th>
+            <th>IP Address</th>
+            <th>Ports</th>
+            <th>Vulnerabilities</th>
+          </tr>
         </thead>
         <tbody>
             {% for result in domainData %}
@@ -68,8 +135,15 @@
                 <td><a href="https://{{result['url']}} ">
                     {{result['url']}} 
                 </a></td>
-                <td>{{result['ips']}}</td>
-                <td>{{result['ports']}}</td>
+                <td>
+                    {% for ip in result['ips'] %}
+                      {{ip}}
+                      <br>
+                    {% endfor %}
+                </td>
+                <td>{% for port in result['ports'] %}
+                    {{port}}; 
+                  {% endfor %}</td>
                 <td class="text-error">
                   {% for vuln in result['vulns'] %}
                   <a href="https://nvd.nist.gov/vuln/detail/{{vuln}}">
@@ -78,18 +152,34 @@
                 </td>
             </tr>
             <tr >
-                <td colspan="6" class="hiddenRow"><div class="accordian-body collapse" id="object-{{ loop.index }}"><iframe src=https://{{ result['url'] }} width = "100%" height = "200px" style="resize: both;"></iframe>
+                <td colspan="6" class="hiddenRow"><div class="accordian-body collapse" id="object-{{ loop.index }}"><iframe src=http://localhost:3000/frame?url=http://{{ result['url'] }} width = "100%" height = "200px" style="resize: both;"></iframe>
                 </div> </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     <hr>
-    <div class="container" >
-    <h2>LinkedIn Details</h2>
-    
+
+    <h3>LinkedIn Details</h3>
+    <h5 style="display: inline-block;">Information available online regarding open positions and current employees, specifically with "Cyber" or "Security" in their title. These may all be false positives. Do the results indicate a concerning/lack of engineers?</h5>
+    <input
+      type="checkbox"
+      data-toggle="toggle"
+      data-on="Yes"
+      data-off="No"
+      id="toggle_staff"
+    />
+    <br>
+    <script>
+      $(function() {
+        $('#toggle_staff').change(function() {
+          $('#toggle_staff_text').toggle();
+        })
+      })
+    </script>
+
         <a name="targetname"></a>
-        <div style="width: 49%; display: inline-block; padding-right:5%; vertical-align:top;">
+        <div style="width: 49%; display: inline-block; vertical-align:top;">
           <h3>Hiring</h3>
           <table class="table">
             <tr>
@@ -106,7 +196,7 @@
             {% endfor %}
           </table>
         </div>
-        <div style="width: 49%; display: inline-block; padding-right:5%; vertical-align:top;">
+        <div style="width: 49%; display: inline-block; vertical-align:top;">
           <h3>Current Employees</h3>
           <table class="table">
             <tr>
@@ -123,7 +213,5 @@
             {% endfor %}
           </table>
         </div>
-      </div>
-    </a>
   </body>
 </html>

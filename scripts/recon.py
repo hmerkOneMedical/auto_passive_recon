@@ -22,15 +22,17 @@ def runRecon(companyUrl, companyName, subdomainOutFile, interactive, runSublist3
 
     details = scrapeCrunchbase.runBasics(companyName)
     founderEmails = []
-    for founder in details['founders']:
-        founderEmails.append(getFounderEmail(companyUrl, founder))
+    if details:
+        for founder in details['founders']:
+            founderEmails.append(getFounderEmail(companyUrl, founder))
     formatResponse('Founder Emails', founderEmails)
 
     if interactive:
         formatInput('Press `return` to continue.')
 
     data = {}
-    data['details'] = details
+    if details:
+        data['details'] = details
     print(data)
 
     domain = whois.query(companyUrl)

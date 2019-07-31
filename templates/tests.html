@@ -7,6 +7,12 @@
   id="bootstrap-css"
 />
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>
+
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+
 <!------ Include the above in your HEAD tag ---------->
 <html>
   <head>
@@ -14,45 +20,177 @@
     <link rel="stylesheet" type="text/css" href="../static/styles.css" />
   </head>
   <body>
-      <h1>Jump to Information Quickly!</h1>
-      <a href="#targetname">LinkedIn</a>
-      <hr>
+    <h1>Jump to Information Quickly!</h1>
+    <a href="#targetname">LinkedIn</a>
 
-      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=security@onemedical.com" rel="noopener noreferrer" target="_blank">Report to OneMedical</a>
+    <div class="card" style="width: 18rem;">
+      <div class="card-body">
+        <h5 class="card-title">Company Information</h5>
+        <p class="card-text">Information sourced from Crunchbase</p>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">Founded in </li>
+            <li class="list-group-item">Founders:</li>
+            <li class="list-group-item">Etc:</li>
+          </ul>
+      </div>
+    </div>
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+          <h5 class="card-title">Company Information</h5>
+          <p class="card-text">Size, Etc. Public. Idk</p>
+        </div>
+      </div>
+    <hr>
 
+    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=security@onemedical.com" rel="noopener noreferrer" target="_blank">Report to OneMedical</a>
 
-    <div class="container" >
+    <button id="cmd">generate PDF</button>
+    
+    <div class="card" style="width: 45em; display: inline-block; ">
+        <div class="card-body">
+          <h5 class="card-title">Report Summary</h5>
+          <ul class="list-group list-group-flush">
+              <li class="list-group-item" id="toggle_breach_text" display="none"> xxx </li>
+            </ul>
+        </div>
+      </div>
+
+      <input id="toggle-event" type="checkbox" data-toggle="toggle">
+      <div id="console-event"></div>
+      <script>
+        $(function() {
+          $('#toggle-event').change(function() {
+            $('#toggle_breach_text').toggle() //('Toggle: ' + $(this).prop('checked'))
+          })
+        })
+      </script>
+                      
+    <div class="container">
+        <div class="row">
+          <div class="col-md-6 col-md-offset-3">
+            <div class="well well-sm">
+              <form class="form-horizontal" action="/ACTION" method="post">
+                <fieldset>
+                  <legend class="text-center">
+                      Generate Executive Report
+                  </legend>
+                  
+                  <!-- Message body -->
+                  <div class='form-group'>
+                      <label class='col-md-3 control-label' for='message'>Purpose of Vendor</label>
+                      <div class='col-md-9'>
+                        <textarea class='form-control' id='message' name='message' placeholder='Please enter your message here...' rows='5'></textarea>
+                      </div>
+                    </div>
+                    
+                  <!-- Employees input-->
+                  <div class="form-group">
+                    <label class="col-md-3 control-label" for="employees"
+                      >Current Security Employement</label
+                    >
+                    <div class="col-md-9">
+                      <input
+                        id="employees"
+                        name="employees"
+                        type="checkbox"
+                        data-toggle="toggle"
+                        data-on="Yes"
+                        data-off="No"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Hiring input-->
+                  <div class="form-group">
+                    <label class="col-md-3 control-label" for="hiring"
+                      >Current Security Employement</label
+                    >
+                    <div class="col-md-9">
+                      <input
+                        id="hiring"
+                        name="hiring"
+                        type="checkbox"
+                        data-toggle="toggle"
+                        data-on="Yes"
+                        data-off="No"
+                      />
+                    </div>
+                  </div>
+
+                   <!-- breaches input-->
+                   <div class="form-group">
+                      <label class="col-md-3 control-label" for="breaches"
+                        >History of Security Breaches</label
+                      >
+                      <div class="col-md-9">
+                        <input
+                          id="breaches"
+                          name="breaches"
+                          type="checkbox"
+                          data-toggle="toggle"
+                          data-on="Yes"
+                          data-off="No"
+                        />
+                      </div>
+                    </div>
+  
+                  
+  
+                  
+                  <!-- Form actions -->
+                  <div class="form-group">
+                    <div class="col-md-12 text-right">
+                      <button
+                        type="submit"
+                        class="btn btn-primary btn-lg"
+                      >
+                        Submit
+                      </button>
+                    </div>
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+    <div id="download_content">
+      <h1>Test</h1>
+      </div>
+      <div class="container" >
         <a name="targetname"></a>
         <h2>Title</h2>
-      <table class="table" style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
-        <tr>
-          <th scope="col">Title</th>
-          <th scope="col" style="width: 100px;">LinkedIn</th>
-          <th scope="col">Description</th>
-        </tr>
-        {% for result in data %}
-        <tr>
-          <td>{{ result['title'] }}</td>
-          <td><a href={{ result['link'] }}>LinkedIn</a></td>
-          <td>{{ result['description'] }}</td>
-        </tr>
-        {% endfor %}
-      </table>
-      <table class="table" style="width: 40%;display: inline-block;padding-left:5%; vertical-align:top;">
-            <tr>
-              <th scope="col">Title</th>
-              <th scope="col" style="width: 100px;">LinkedIn</th>
-              <th scope="col">Description</th>
-            </tr>
-            {% for result in data %}
-            <tr>
-              <td>{{ result['title'] }}</td>
-              <td><a href={{ result['link'] }}>LinkedIn</a></td>
-              <td>{{ result['description'] }}</td>
-            </tr>
-            {% endfor %}
-          </table>
-    </div>
+        <table class="table" style="width: 40%; display: inline-block; padding-right:5%; vertical-align:top;">
+          <tr>
+            <th scope="col">Title</th>
+            <th scope="col" style="width: 100px;">LinkedIn</th>
+            <th scope="col">Description</th>
+          </tr>
+          {% for result in data %}
+          <tr>
+            <td>{{ result['title'] }}</td>
+            <td><a href={{ result['link'] }}>LinkedIn</a></td>
+            <td>{{ result['description'] }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        <table class="table" style="width: 40%;display: inline-block;padding-left:5%; vertical-align:top;">
+          <tr>
+            <th scope="col">Title</th>
+            <th scope="col" style="width: 100px;">LinkedIn</th>
+            <th scope="col">Description</th>
+          </tr>
+          {% for result in data %}
+          <tr>
+            <td>{{ result['title'] }}</td>
+            <td><a href={{ result['link'] }}>LinkedIn</a></td>
+            <td>{{ result['description'] }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    
     <!-- Collapsable List: -->
     <table class="table table-condensed" style="border-collapse:collapse;">
             <thead>
@@ -76,6 +214,25 @@
                 {% endfor %}
             </tbody>
         </table>
+
+    
+    <script>
+        var doc = new jsPDF();
+        var specialElementHandlers = {
+          '#editor': function(element, renderer) {
+            return true;
+          },
+        };
+      
+        $('#cmd').click(function() {
+          doc.fromHTML($('#download_content').html(), 15, 15, {
+            width: 170,
+            elementHandlers: specialElementHandlers,
+          });
+          doc.save('report.pdf');
+        });
+      </script>
+  
     
   </body>
 </html>
