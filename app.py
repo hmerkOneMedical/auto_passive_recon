@@ -2,7 +2,7 @@ __author__ = 'helena'
 
 from flask import Flask, render_template, request
 import json
-from scripts.recon import runRecon
+from scripts.recon import run_recon
 import string
 import os
 import requests
@@ -40,7 +40,7 @@ def recon():
     company_url = request.form['company_url']
     company_name = (request.form['company_name']).lower()
 
-    response = runRecon(company_url, company_name, None, False)
+    response = run_recon(company_url, company_name, None, False)
     details = response['details']
     domain_results = response['domain_results']
     employees = response['employees']

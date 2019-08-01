@@ -19,7 +19,7 @@ def dns_resolve(hostnames):
     return (requests.get(url)).json()
 
 
-def getDomainVulnerabilites(subdomains):
+def get_domain_vulnerabilites(subdomains):
     domainDict = domainsToIPs(subdomains)
     ipResults = []
     for key, value in domainDict.iteritems():
@@ -82,7 +82,7 @@ def getDomainVulnerabilites(subdomains):
     return ipResults
 
 
-def findVulnerabilitiesWithIp(ip):
+def find_ip_vulnerabilities(ip):
     try:
         result = api.host(ip)
         respSet = set([])

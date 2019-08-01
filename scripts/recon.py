@@ -13,7 +13,7 @@ from constants import *
 
 # ==================
 
-def runRecon(company_url, company_name, subdomain_out_file, interactive, run_sublist3r='yes', runShodan='no'):
+def run_recon(company_url, company_name, subdomain_out_file, interactive, run_sublist3r='yes', runShodan='no'):
     subdomains = []
     domain_results = {}
     data = {}
@@ -22,40 +22,36 @@ def runRecon(company_url, company_name, subdomain_out_file, interactive, run_sub
     unwanted_keys = ['rank', 'keyword']
 
     details = scrape_crunchbase.run_basics(company_name)
+
     founder_emails = []
     if details:
         for founder in details['founders']:
-            founder_emails.append(getFounderEmail(company_url, founder))
+            founder_emails.append(get_work_email(company_url, founder))
 
     format_response('Founder Emails', founder_emails)
 
     if interactive: formatInput('Press `return` to continue.')
 
-    if details: data['details'] = details
-
     whois_result = whois.query(company_url)
     whois_result = json.loads(whois_result.encode('utf-8'))
     scrape_employees_query = google_scraper.query(
-        'site:www.linkedin.com/in \'' + company_name + '\' security cyber ', 10)
+        'site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
     scrape_jobs_query = google_scraper.query(
-        'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber ', 10)
+        'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
 
     format_response('WhoIs Results', whois_result, [])
     
     if interactive: formatInput('Press `return` to continue.')
 
-    format_response('Linkedin Hits for Currently Employed In Security/Cyber',
-                   scrape_employees_query, unwanted_keys)
+    format_response('Linkedin Hits for Currently Employed In Security/Cyber', scrape_employees_query, unwanted_keys)
     if interactive: formatInput('Press `return` to continue.')
     
-    format_response('Linkedin Hits for Security/Cyber Jobs Listed',
-                   scrape_jobs_query, unwanted_keys)
+    format_response('Linkedin Hits for Security/Cyber Jobs Listed', scrape_jobs_query, unwanted_keys)
 
     if interactive: run_sublist3r = formatInput('Would you like to run sublist3r? (yes/no)')
 
     if (run_sublist3r == 'yes'):
-        format_response('Searching for Subdomains (sublist3r)',
-                       '...will be saved to specified file.', [])
+        format_response('Searching for Subdomains (sublist3r)', '...will be saved to specified file.', [])
         try:
             subdomains = sublist3r.main(
                 company_url, subdomain_out_file, ports=None, silent=True, verbose=True, engines=None)
@@ -63,9 +59,8 @@ def runRecon(company_url, company_name, subdomain_out_file, interactive, run_sub
 
             if len(subdomains) > 0:
                 print('evaluating.')
-                domain_results = getDomainVulnerabilites(subdomains)
-                format_response(
-                    'Shodan Identified the following CVEs (Visit https://nvd.nist.gov/vuln/detail/CVE-[xxxx]-[xxxx])', domain_results)
+                domain_results = get_domain_vulnerabilites(subdomains)
+                format_response('Shodan Identified the following CVEs (Visit https://nvd.nist.gov/vuln/detail/CVE-[xxxx]-[xxxx])', domain_results)
 
         except Exception as e:
             print(e)
@@ -86,17 +81,27 @@ def runRecon(company_url, company_name, subdomain_out_file, interactive, run_sub
             results = shodan_query(search_query)
             print('Results found: {}'.format(results['total']))
             if run_verbose == 'yes':
-                format_response('Shodan Results Found: ', results['matches'], [
-                               'html', 'data', 'references'])
+                format_response('Shodan Results Found: ', results['matches'], ['html', 'data', 'references'])
         except shodan.APIError, e:
             print('Error: {}'.format(e))
 
         if not interactive: runShodan = False
         else:
-            runShodan = formatInput(
-                'Would you like to run Shodan again? (yes/no)')
+            runShodan = formatInput('Would you like to run Shodan again? (yes/no)')
     else:
         print('Done with shodan')
+    
+    data = {
+        'domain_results': domain_results, 
+        'employees': scrape_employees_query,
+        'jobs': scrape_jobs_query,
+        'details': details,
+        'founder_emails': founder_emails,
+        'whois_result': whois_result
+    }
+
+    if not interactive:
+        return data
 
     print(BOLD+'################## Report #####################'+END)
     if subdomains and len(subdomains) > 20:
@@ -111,29 +116,19 @@ def runRecon(company_url, company_name, subdomain_out_file, interactive, run_sub
 
     security_hiring = 0
     for human in scrape_jobs_query:
-        security_hiring += human['description'].count(
-            'Security') + human['description'].count('cyber')
+        security_hiring += human['description'].count('Security') + human['description'].count('cyber')
+    
     if security_hiring < 10:
         print('Not hiring significant security staff')
         print(errors['security_eng_hiring'])
 
     print(errors['standard_disclosure'])
-    
-    data = {
-        'domain_results': domain_results, 
-        'employees': scrape_employees_query,
-        'jobs': scrape_jobs_query,
-        'details': details,
-        'founder_emails': founder_emails,
-        'whois_result': whois_result
-    }
-    return data
 
 
 if __name__ == '__main__':
     company_url = formatInput('URL')
     company_name = formatInput('NAME (as listed on crunchbase)')
     subdomain_out_file = formatInput(
-        'FILE PATH FOR SUBDOMAINS (use .txt extension)')
+        'Please supply a filepath for output of subdomain enumeration (use .txt extension)')
     interactive = True
-    runRecon(company_url, company_name, subdomain_out_file, interactive)
+    run_recon(company_url, company_name, subdomain_out_file, interactive)
