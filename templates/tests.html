@@ -18,9 +18,15 @@
   <head>
     <title>Tests</title>
     <link rel="stylesheet" type="text/css" href="../static/styles.css" />
+    <style type="text/css" media="print">
+      .dontprint
+      { display: none; }
+      </style>
   </head>
   <body>
     <h1>Jump to Information Quickly!</h1>
+    <div class="dontprint">I'm only visible on the screen</div>
+
     <a href="#targetname">LinkedIn</a>
 
     <div class="card" style="width: 18rem;">
@@ -201,7 +207,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for result in domainData %}
+                {% for result in domain_results %}
                 <tr data-toggle="collapse" data-target="#object-{{ loop.index }}" class="accordion-toggle">
                     <td>{{result['url']}}</td>
                     <td>{{result['ip']}}</td>

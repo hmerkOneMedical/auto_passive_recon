@@ -98,5 +98,5 @@ def findVulnerabilitiesWithIp(ip):
     except:
         return []
 
-def shodanQuery(query):
+def shodan_query(query):
     return api.search(query)

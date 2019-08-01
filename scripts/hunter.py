@@ -8,6 +8,10 @@ def getFounderEmail(domain, founder_name):
 
     response = requests.get(hunter_url)
     response = response.json() 
-    return response['data']['email']
+    email = response['data']['email']
+    if email != None:
+        return email
+    
+    return '[No Email Found]'
 
 #getFounderEmail('asana.com', 'Dustin Moskovitz')

@@ -15,15 +15,31 @@
 <!------ Include the above in your HEAD tag ---------->
 <html>
   <head>
-    <title>Report</title>
+    <title>Automated Report</title>
     <link rel="stylesheet" type="text/css" href="../static/styles.css" />
+    <style type="text/css" media="print">
+      .dontprint
+      { display: none; }
+    </style>
   </head>
   <body>
-    <h4><a href="/">Start Over</a></h4>
     <hr>
-    <h1>Passive Recon Report: {{ companyName }}</h1>
+    <div style="width:30px; height: 30px; display: inline-block; vertical-align:top;">
+      <img src="https://www.onemedical.com/static/images/apple-touch-icon-180x180.png" style="max-width:100%;
+      max-height:100%;">
+      </div>
+    <h1 style="display: inline-block; vertical-align:top;">Passive Recon Report: {{ company_name }}</h1>
+
+    <div class="dontprint">
+        <hr>
+        <h4><a target="_blank" href="/">Start Over</a></h4>
+        <h4>
+          To submit report, open the print module (⌘P) and save as a PDF.<br>
+          Email Security@ and we will get back to you shortly!
+        </h4>
+      </div>
     <hr>
-        <div class="card" style="width: 45em; display: inline-block; ">
+        <div class="card" style="width: 49%; display: inline-block; ">
           <div class="card-body">
             <h3 class="card-title">Company Details</h3>
             <ul class="list-group list-group-flush">
@@ -37,17 +53,23 @@
                 <li class="list-group-item">Number of Employees: {{details['num_employees']}}</li>
                 <li class="list-group-item">Headquarters: {{details['location']}}</li>
                 <li class="list-group-item">Online Presence: <br>
-                    {% for det in details['online'] %}
-                    <a href="{{details['online'][det]}}">{{details['online'][det]}}</a>
+                  {% for det in details['online'] %}
+                    <a target="_blank" href="{{details['online'][det]}}">{{details['online'][det]}}</a>
                     <br>
                   {% endfor %}
+                </li>
+                <li class="list-group-item">Domain Details: 
+                    {% for prop in details['whois_result']['data'] %}
+                      {{prop}}: {{details['whois_result']['data'][prop]}}
+                      <br>
+                    {% endfor %}
                 </li>
               </ul>
           </div>
         </div>
 
         <!-- Report details -->
-        <div class="card" style="width: 30em; display: inline-block; vertical-align:top;">
+        <div class="card" style="width: 49%; display: inline-block; vertical-align:top;">
             <div class="card-body">
               <h3 class="card-title">Report Summary</h3>
               <ul class="list-group list-group-flush">
@@ -55,39 +77,43 @@
                   <li class="list-group-item" id="toggle_pwned_text" style="display:none;">The founder's email was associated with other security breaches. This can indicate targetting, poor password rotation, or weak passwords.</li>
                   <li class="list-group-item" id="toggle_staff_text" style="display:none;">There appears to be a lack of security engineers. This can present a significant security risk and can pose challenges in uncovering security breaches or timely remediating exploitable flaws in their environment.</li>
                   <li class="list-group-item" id="toggle_vuln_text" style="display:none;">Our automated testing discovered vulnerabilites. See below for details.</li>
-                  {% if domainData|length > 100 %}
-                    <li class="list-group-item" id="toggle_vuln_text" style="display:none;">With {{domainData|length}} (sub)domains, security risk increases.</li>
+                  {% if domain_results|length > 100 %}
+                    <li class="list-group-item" id="toggle_vuln_text" style="display:none;">With {{domain_results|length}} (sub)domains, security risk increases.</li>
                   {% endif %}
                 </ul>
+                <li class="list-group-item" id="toggle_vuln_text" style="display:none;">Because of the time boxed nature of the reconnaissance and because only publicly available data sources were used, this report is not meant to be indicative of overall security maturity of the company evaluated. Rather, it is meant to be used solely as a potential indicator that can be considered as one part of the overall diligence process.</li>
             </div>
           </div>
           
           <hr>
           <!-- -->
        
-        <h3>Non-Automated Checks:</h3>
+        <h3 style="page-break-before: always">Non-Automated Checks:</h3>
         <div>
-            <h5 style="display: inline-block">Have founder emails been compromised? Visit <a href="https://haveibeenpwned.com">HaveIBeenPwned</a> to check {% for founder in founderEmails %} {{founder}} {% endfor %} </h5>
-            <input
-              type="checkbox"
-              data-toggle="toggle"
-              data-on="Yes"
-              data-off="No"
-              id="toggle_pwned"
-            />
-          <div style="display: inline-block;width: 90%;">
-            <h5 style="display: inline-block;">Have there been previous security breaches?</h5>
-            <input
-              type="checkbox"
-              data-toggle="toggle"
-              data-on="Yes"
-              data-off="No"
-              id="toggle_breach"
-            />
-            <br>
-          </div>
-            <iframe style="outline:none;width: 500px;height: 500px;" src="https://www.google.com/search?igu=1&ei=&q={{companyName}}+breach" style=></iframe>
-          </div>
+            <h5 style="display: inline-block; width: 50%; vertical-align:top;">Have founder emails been compromised? Visit <a target="_blank" href="https://haveibeenpwned.com">HaveIBeenPwned</a> to check {% for founder in founder_emails %} {{founder}} {% endfor %} </h5>
+            <div style="display: inline-block; vertical-align:top; right: 40%;">
+              <input
+                type="checkbox"
+                data-toggle="toggle"
+                data-on="Yes"
+                data-off="No"
+                id="toggle_pwned"
+              />
+            </div>
+              <h5 style="display: inline-block; width: 50%; vertical-align:top;">Have there been previous security breaches?</h5>
+              <div style="display: inline-block; vertical-align:top; right: 40%;">
+              <input
+                type="checkbox"
+                data-toggle="toggle"
+                data-on="Yes"
+                data-off="No"
+                id="toggle_breach"
+              />
+              </div>
+              <br>
+            <div class="dontprint">
+              <iframe style="outline:none;width: 500px;height: 500px;" src="https://www.google.com/search?igu=1&ei=&q={{company_name}}+breach" style=></iframe>
+            </div>
         </div>
     <hr>
 
@@ -105,7 +131,8 @@
       </script>
 
     <h3>Domain Details:</h3>
-    Vulnerabilities detected in enumerated (sub)domains:
+    <h5 style="display: inline-block; width: 50%; vertical-align:top;">Are there significant vulnerabilities detected in enumerated (sub)domains?</h5>
+    <div style="display: inline-block; vertical-align:top; right: 40%;">
     <input
       type="checkbox"
       data-toggle="toggle"
@@ -113,6 +140,7 @@
       data-off="No"
       id="toggle_vuln"
     />
+    </div>
     <script>
       $(function() {
         $('#toggle_vuln').change(function() {
@@ -120,6 +148,7 @@
         })
       })
     </script>
+    <br>
      <!-- Collapsable Subdomain List: -->
      <table class="table table-condensed" style="border-collapse:collapse;">
         <thead>
@@ -131,9 +160,9 @@
           </tr>
         </thead>
         <tbody>
-            {% for result in domainData %}
+            {% for result in domain_results %}
             <tr data-toggle="collapse" data-target="#object-{{ loop.index }}" class="accordion-toggle">
-                <td><a href="https://{{result['url']}} ">
+                <td><a target="_blank" href="https://{{result['url']}} ">
                     {{result['url']}} 
                 </a></td>
                 <td>
@@ -147,7 +176,7 @@
                   {% endfor %}</td>
                 <td class="text-error">
                   {% for vuln in result['vulns'] %}
-                  <a href="https://nvd.nist.gov/vuln/detail/{{vuln}}">
+                  <a target="_blank" href="https://nvd.nist.gov/vuln/detail/{{vuln}}">
                     {{vuln}}
                   </a> {% endfor %}
                 </td>
@@ -162,14 +191,16 @@
     <hr>
 
     <h3>LinkedIn Details</h3>
-    <h5 style="display: inline-block;">Information available online regarding open positions and current employees, specifically with "Cyber" or "Security" in their title. These may all be false positives. Do the results indicate a concerning/lack of engineers?</h5>
-    <input
-      type="checkbox"
-      data-toggle="toggle"
-      data-on="Yes"
-      data-off="No"
-      id="toggle_staff"
-    />
+    <h5 style="display: inline-block; width: 50%;">Information available online regarding open positions and current employees, specifically with "Cyber" or "Security" in their title. These may all be false positives. Do the results indicate a concerning/lack of engineers?</h5>
+    <div style="display: inline-block; vertical-align:top; right: 40%;">
+      <input
+        type="checkbox"
+        data-toggle="toggle"
+        data-on="Yes"
+        data-off="No"
+        id="toggle_staff"
+      />
+    </div>
     <br>
     <script>
       $(function() {
@@ -179,40 +210,42 @@
       })
     </script>
 
-        <a name="targetname"></a>
-        <div style="width: 49%; display: inline-block; vertical-align:top;">
-          <h3>Hiring</h3>
-          <table class="table">
-            <tr>
-              <th scope="col">Title</th>
-              <th scope="col" style="width: 100px;">LinkedIn</th>
-              <th scope="col">Description</th>
-            </tr>
-            {% for result in jobs %}
-            <tr>
-              <td>{{ result['title'] }}</td>
-              <td><a href={{ result['link'] }}>LinkedIn</a></td>
-              <td>{{ result['description'] }}</td>
-            </tr>
-            {% endfor %}
-          </table>
-        </div>
-        <div style="width: 49%; display: inline-block; vertical-align:top;">
-          <h3>Current Employees</h3>
-          <table class="table">
-            <tr>
-              <th scope="col">Title</th>
-              <th scope="col" style="width: 100px;">LinkedIn</th>
-              <th scope="col">Description</th>
-            </tr>
-            {% for result in employees %}
-            <tr>
-              <td>{{ result['title'] }}</td>
-              <td><a href={{ result['link'] }}>LinkedIn</a></td>
-              <td>{{ result['description'] }}</td>
-            </tr>
-            {% endfor %}
-          </table>
-        </div>
+      <a name="targetname"></a>
+      <div  class="dontprint">
+      <div style="width: 49%; display: inline-block; vertical-align:top;">
+        <h3>Hiring</h3>
+        <table class="table">
+          <tr>
+            <th scope="col">Title</th>
+            <th scope="col" style="width: 100px;">LinkedIn</th>
+            <th scope="col">Description</th>
+          </tr>
+          {% for result in jobs %}
+          <tr>
+            <td>{{ result['title'] }}</td>
+            <td><a target="_blank" href={{ result['link'] }}>LinkedIn</a></td>
+            <td>{{ result['description'] }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      <div style="width: 49%; display: inline-block; vertical-align:top;">
+        <h3>Current Employees</h3>
+        <table class="table">
+          <tr>
+            <th scope="col">Title</th>
+            <th scope="col" style="width: 100px;">LinkedIn</th>
+            <th scope="col">Description</th>
+          </tr>
+          {% for result in employees %}
+          <tr>
+            <td>{{ result['title'] }}</td>
+            <td><a target="_blank" href={{ result['link'] }}>LinkedIn</a></td>
+            <td>{{ result['description'] }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
   </body>
 </html>

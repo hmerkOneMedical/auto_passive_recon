@@ -12,7 +12,7 @@ END = '\033[0m'
 def formatInput(promter):
     return raw_input(BOLD + promter+ END + ' \n>>  ')
 
-def formatResponse(title, log = '', unwanted_keys = []):
+def format_response(title, log = '', unwanted_keys = []):
     print('%s==========================%s' % (Gr, W))
     print('%s%s%s%s%s' % (B, BOLD, title, W, END))
     print(pprint(log, 0, unwanted_keys))

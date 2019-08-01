@@ -15,7 +15,7 @@ headers = {
     'cache-control': 'no-cache'
     }
 
-def convertCount(value):
+def conver_count(value):
     try:
         value = int(value)
     except: 
@@ -23,9 +23,12 @@ def convertCount(value):
     
     return str(value)
 
-def formatBasicsResponse(res):
+def format_response(res):
     companyBasics = (res['overview_company_fields'].values())
-    locations = (res['overview_fields']['location_group_identifiers'])
+    try:
+        locations = (res['overview_fields']['location_group_identifiers'])
+    except:
+        locations = []
     founded_on = res['overview_fields']['founded_on']['value']
     founders = []
     try: 
@@ -36,7 +39,7 @@ def formatBasicsResponse(res):
 
     employeeCount = res['overview_fields']['num_employees_enum']
     employeeCount = employeeCount.split('_')
-    employeeCount = convertCount(employeeCount[1]) + ' - ' + convertCount(employeeCount[2])
+    employeeCount = conver_count(employeeCount[1]) + ' - ' + conver_count(employeeCount[2])
 
     for b in range(len(companyBasics)):
         if not isinstance(companyBasics[b], str):
@@ -58,7 +61,7 @@ def formatBasicsResponse(res):
 
     return {'company': companyBasics, 'location': location, 'founded_on': founded_on, 'founders': founders, 'online': online, 'num_employees': employeeCount}
 
-def companyBasicInfo(name):
+def company_basic_info(name):
     print(name)
     name = name.replace(' ', '-')
     url = 'https://www.crunchbase.com/v4/data/entities/organizations/' + name + \
@@ -70,21 +73,21 @@ def companyBasicInfo(name):
         response = requests.request('GET', url, headers=headers)    
         res =  yaml.safe_load(response.text)['cards']
 
-        return formatBasicsResponse(res)
+        return format_response(res)
     except Exception as e:
         print('Scraping crunchbase failed.')
         print(e)
         return None
 
 
-def runBasics(companyName):
+def run_basics(company_name):
     run = True
     while run:
-        basics = (companyBasicInfo(companyName))
-        formatResponse('Basic Company Information (Crunchbase)', basics, [])
+        basics = (company_basic_info(company_name))
+        format_response('Basic Company Information (Crunchbase)', basics, [])
         if not basics:
-            companyName = formatInput('Update company name to try again:')    
-            if len(companyName) == 0:
+            company_name = formatInput('Update company name to try again:')    
+            if len(company_name) == 0:
                 run = False
         else:
             run = False
