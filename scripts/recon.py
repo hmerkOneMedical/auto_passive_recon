@@ -28,7 +28,7 @@ def run_recon(company_url, company_name, subdomain_out_file, interactive, run_su
         for founder in details['founders']:
             founder_emails.append(get_work_email(company_url, founder))
 
-    format_response('Founder Emails', founder_emails)
+    format_print_response('Founder Emails', founder_emails)
 
     if interactive: formatInput('Press `return` to continue.')
 
@@ -39,28 +39,28 @@ def run_recon(company_url, company_name, subdomain_out_file, interactive, run_su
     scrape_jobs_query = google_scraper.query(
         'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
 
-    format_response('WhoIs Results', whois_result, [])
+    format_print_response('WhoIs Results', whois_result, [])
     
     if interactive: formatInput('Press `return` to continue.')
 
-    format_response('Linkedin Hits for Currently Employed In Security/Cyber', scrape_employees_query, unwanted_keys)
+    format_print_response('Linkedin Hits for Currently Employed In Security/Cyber', scrape_employees_query, unwanted_keys)
     if interactive: formatInput('Press `return` to continue.')
     
-    format_response('Linkedin Hits for Security/Cyber Jobs Listed', scrape_jobs_query, unwanted_keys)
+    format_print_response('Linkedin Hits for Security/Cyber Jobs Listed', scrape_jobs_query, unwanted_keys)
 
     if interactive: run_sublist3r = formatInput('Would you like to run sublist3r? (yes/no)')
 
     if (run_sublist3r == 'yes'):
-        format_response('Searching for Subdomains (sublist3r)', '...will be saved to specified file.', [])
+        format_print_response('Searching for Subdomains (sublist3r)', '...will be saved to specified file.', [])
         try:
             subdomains = sublist3r.main(
                 company_url, subdomain_out_file, ports=None, silent=True, verbose=True, engines=None)
-            format_response('Subdomain Count:', str(len(subdomains)), [])
+            format_print_response('Subdomain Count:', str(len(subdomains)), [])
 
             if len(subdomains) > 0:
                 print('evaluating.')
-                domain_results = get_domain_vulnerabilites(subdomains)
-                format_response('Shodan Identified the following CVEs (Visit https://nvd.nist.gov/vuln/detail/CVE-[xxxx]-[xxxx])', domain_results)
+                domain_results = add_domain_details(subdomains)
+                format_print_response('Shodan Identified the following CVEs (Visit https://nvd.nist.gov/vuln/detail/CVE-[xxxx]-[xxxx])', domain_results)
 
         except Exception as e:
             print(e)
@@ -81,7 +81,7 @@ def run_recon(company_url, company_name, subdomain_out_file, interactive, run_su
             results = shodan_query(search_query)
             print('Results found: {}'.format(results['total']))
             if run_verbose == 'yes':
-                format_response('Shodan Results Found: ', results['matches'], ['html', 'data', 'references'])
+                format_print_response('Shodan Results Found: ', results['matches'], ['html', 'data', 'references'])
         except shodan.APIError, e:
             print('Error: {}'.format(e))
 
@@ -90,6 +90,7 @@ def run_recon(company_url, company_name, subdomain_out_file, interactive, run_su
             runShodan = formatInput('Would you like to run Shodan again? (yes/no)')
     else:
         print('Done with shodan')
+
     
     data = {
         'domain_results': domain_results, 
@@ -97,7 +98,7 @@ def run_recon(company_url, company_name, subdomain_out_file, interactive, run_su
         'jobs': scrape_jobs_query,
         'details': details,
         'founder_emails': founder_emails,
-        'whois_result': whois_result
+        'whois_result': whois_result['data'],
     }
 
     if not interactive:

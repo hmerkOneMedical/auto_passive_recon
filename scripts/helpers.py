@@ -1,4 +1,5 @@
 import dns.resolver
+import builtwith
 
 Gr = '\033[90m'   # grey
 G = '\033[92m'  # green
@@ -12,7 +13,7 @@ END = '\033[0m'
 def formatInput(promter):
     return raw_input(BOLD + promter+ END + ' \n>>  ')
 
-def format_response(title, log = '', unwanted_keys = []):
+def format_print_response(title, log = '', unwanted_keys = []):
     print('%s==========================%s' % (Gr, W))
     print('%s%s%s%s%s' % (B, BOLD, title, W, END))
     print(pprint(log, 0, unwanted_keys))
@@ -69,3 +70,9 @@ def domainsToIPs(domains):
             pass
 
     return ipDict
+
+
+def get_technical_details(domain):
+    searchfor = domain.split('://')[-1]
+    searchfor = 'https://'+searchfor
+    return builtwith.parse(searchfor)

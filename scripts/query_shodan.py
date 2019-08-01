@@ -19,7 +19,7 @@ def dns_resolve(hostnames):
     return (requests.get(url)).json()
 
 
-def get_domain_vulnerabilites(subdomains):
+def add_domain_details(subdomains):
     domainDict = domainsToIPs(subdomains)
     ipResults = []
     for key, value in domainDict.iteritems():
@@ -74,8 +74,9 @@ def get_domain_vulnerabilites(subdomains):
         if liveURL:
             if vulns == None:
                 vulns = []
-
-            addition = {'url': key, 'ips': domainDict[key], 'vulns': vulns, 'ports': ports}
+            
+            builtwith_results = get_technical_details(key)
+            addition = {'url': key, 'ips': domainDict[key], 'vulns': vulns, 'ports': ports, 'builtwith': builtwith_results}
             ipResults.append(addition)
             print(addition)
 

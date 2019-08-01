@@ -47,7 +47,6 @@ def recon():
     jobs = response['jobs']
     founder_emails = response['founder_emails']
     whois_result = response['whois_result']
-    
 
     for job in jobs:
         job['description'] = filter(lambda x: x in printable, job['description'])
@@ -57,7 +56,9 @@ def recon():
 
     print domain_results
 
-    return render_template('report_details.html', whois_result=whois_result, company_name=company_name, details=details, jobs=jobs, employees=employees, domain_results=domain_results, founder_emails=founder_emails)
+    current_ip = os.getenv('NGROK_EXPOSED_IP', '0.0.0.0')
+
+    return render_template('report_details.html', EXPOSED_IP=current_ip, whois_result=whois_result, company_name=company_name, details=details, jobs=jobs, employees=employees, domain_results=domain_results, founder_emails=founder_emails)
 
 
 # @app.route('/printing_test')
