@@ -34,4 +34,13 @@ Launch Flask app:
 python app.py
 ```
 
-Visit 0.0.0.0/3000
+Visit 0.0.0.0/3003
+
+
+## Deployed to heroku. 
+
+### To deploy, ensure you have added backpacks to support selenium / chrome driver.
+```
+heroku buildpacks:add --index 1 https://github.com/heroku/heroku-buildpack-chromedriver
+heroku buildpacks:add --index 2 https://github.com/heroku/heroku-buildpack-google-chrome
+```
