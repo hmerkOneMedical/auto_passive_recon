@@ -32,6 +32,8 @@ def run_recon(company_url, company_name, subdomain_out_file, interactive, run_su
 
     if interactive: formatInput('Press `return` to continue.')
 
+    print(company_url)
+    company_url = str(company_url)
     whois_result = whois.query(company_url)
     whois_result = json.loads(whois_result.encode('utf-8'))
     scrape_employees_query = google_scraper.query(
