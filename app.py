@@ -143,12 +143,14 @@ def report():
 
 @celery.task(bind=True)
 def long_task(self):
+    print('hereeeeee')
     """Background task that runs a long function with progress reports."""
     verb = ['Starting up', 'Booting', 'Repairing', 'Loading', 'Checking']
     adjective = ['master', 'radiant', 'silent', 'harmonic', 'fast']
     noun = ['solar array', 'particle reshaper', 'cosmic ray', 'orbiter', 'bit']
     message = ''
     total = random.randint(10, 50)
+    print('now here')
     for i in range(total):
         if not message or random.random() < 0.25:
             message = '{0} {1} {2}...'.format(random.choice(verb),
@@ -187,7 +189,9 @@ def long_task_demo():
 
 @app.route('/longtask', methods=['POST'])
 def longtask():
+    print('hit')
     task = long_task.apply_async()
+    print('help.')
     return jsonify({}), 202, {'Location': url_for('taskstatus',
                                                   task_id=task.id)}
 
