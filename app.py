@@ -108,7 +108,8 @@ def report():
                 company_url, None, ports=None, silent=True, verbose=True, engines=None)
 
         
-        
+        yield '<br>'
+
         domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
         yield domain_html(domain_results)
         # # format_json_save('domain_results', domain_results)
