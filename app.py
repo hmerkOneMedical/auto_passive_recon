@@ -24,7 +24,6 @@ app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 redis_url = redis.from_url(os.environ.get("REDIS_URL"))
 
-
 app.config['CELERY_BROKER_URL'] = redis_url
 app.config['CELERY_RESULT_BACKEND'] = redis_url
 
