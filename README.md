@@ -36,13 +36,30 @@ python app.py
 
 Visit 0.0.0.0/3003
 
+## Deployed to heroku + scaled up web and worker:
 
-## Deployed to heroku. 
+```
+heroku ps:scale web=1
+heroku ps:scale worker=1
+```
 
 ### To deploy, ensure you have added backpacks to support selenium / chrome driver.
+
 ```
 heroku buildpacks:add --index 1 https://github.com/heroku/heroku-buildpack-chromedriver
 heroku buildpacks:add --index 2 https://github.com/heroku/heroku-buildpack-google-chrome
 ```
 
-### Also scale up workers 
+### Set up redis for background processes
+
+```
+heroku addons:create heroku-redis:hobby-dev --app auto-passive-recon
+```
+
+Alternatively, set a different REDIS_URL:
+
+```
+export REDIS_URL=xxx
+```
+
+To run redis locally, execute ./run-redis.sh
