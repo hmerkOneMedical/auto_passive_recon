@@ -1,6 +1,6 @@
 __author__ = 'helena merk'
 
-from flask import Flask, render_template, request, Response, session
+from flask import Flask, render_template, request, Response
 
 import json
 from scripts.recon import run_recon
@@ -48,8 +48,8 @@ def recon():
     company_url = request.form['company_url']
     company_name = (request.form['company_name']).lower()
 
-    session['company_url'] = company_url
-    session['company_name'] = company_name
+    # session['company_url'] = company_url
+    # session['company_name'] = company_name
 
     response = run_recon(company_url, company_name, None, False)
     details = response['details']
@@ -77,15 +77,8 @@ def report():
     company_url = request.form['company_url']
     company_name = (request.form['company_name']).lower()
 
-    session['company_url'] = company_url
-    session['company_name'] = company_name
-
-    def format_json_save(key, value):
-        session[key] = json.dumps(value)
-
-    def callback_for_saving(data):
-        for key, val in data.iteritems():
-            format_json_save(key, value)
+    # session['company_url'] = company_url
+    # session['company_name'] = company_name
 
     def generate():
         #session['test'] = 'yes'
@@ -103,8 +96,6 @@ def report():
                 founder_emails.append(hunter.get_work_email(company_url, founder))
 
         yield non_automated_checks(company_name, founder_emails)
-
-        # yield 'Step 3: Scraping the web...<br>' #str(founder_emails)
 
         scrape_employees_query = google_scraper.query('site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
 
