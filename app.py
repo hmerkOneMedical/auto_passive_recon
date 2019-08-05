@@ -22,7 +22,7 @@ from scripts.render_helpers import *
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
-redis_url = redis.from_url(os.environ.get("REDIS_URL"))
+redis_url = 'redis://h:p6315a2ed8fb0b6701859a0c8ddfd1782722362d6247c6c76e6617dc63fcd02d9@ec2-3-222-220-161.compute-1.amazonaws.com:25139' #redis.from_url(os.environ.get("REDIS_URL"))
 
 app.config['CELERY_BROKER_URL'] = redis_url
 app.config['CELERY_RESULT_BACKEND'] = redis_url

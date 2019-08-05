@@ -44,3 +44,5 @@ Visit 0.0.0.0/3003
 heroku buildpacks:add --index 1 https://github.com/heroku/heroku-buildpack-chromedriver
 heroku buildpacks:add --index 2 https://github.com/heroku/heroku-buildpack-google-chrome
 ```
+
+### Also scale up workers 
