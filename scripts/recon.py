@@ -10,10 +10,11 @@ from query_shodan import *
 from hunter import *
 from helpers import *
 from constants import *
+from domain_enumeration import *
 
 # ==================
 
-def run_recon(company_url, company_name, subdomain_out_file, interactive, run_sublist3r='yes', runShodan='no'):
+def run_recon(company_url, company_name, subdomain_out_file, interactive, run_sublist3r='yes', runShodan='no', local=True):
     subdomains = []
     domain_results = {}
     data = {}
@@ -59,8 +60,10 @@ def run_recon(company_url, company_name, subdomain_out_file, interactive, run_su
     if (run_sublist3r == 'yes'):
         format_print_response('Searching for Subdomains (sublist3r)', '...will be saved to specified file.', [])
         try:
-            subdomains = sublist3r.main(
-                company_url, subdomain_out_file, ports=None, silent=True, verbose=True, engines=None)
+            if local:
+                subdomains = sublist3r.main(company_url, subdomain_out_file, ports=None, silent=True, verbose=True, engines=None)
+            else:
+                subdomains = get_subdomains(company_url)
             format_print_response('Subdomain Count:', str(len(subdomains)), [])
 
             if len(subdomains) > 0:
@@ -138,4 +141,4 @@ if __name__ == '__main__':
     subdomain_out_file = formatInput(
         'Please supply a filepath for output of subdomain enumeration (use .txt extension)')
     interactive = True
-    run_recon(company_url, company_name, subdomain_out_file, interactive)
+    run_recon(company_url, company_name, subdomain_out_file, interactive, True)
