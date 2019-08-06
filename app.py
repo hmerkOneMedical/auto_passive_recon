@@ -175,10 +175,10 @@ def report_status(task_id):
             'current': 1,
             'total': 3,
         }
-    elif task.state == 'PENDING':
+    elif task.state == 'PROGRESS':
         response = {
             'state': task.state,
-            'status': 'Pending...',
+            'status': 'PROGRESS...',
             'current': 1,
             'total': 2,
         }
