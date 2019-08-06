@@ -154,7 +154,7 @@ def async_sublister(self, url):
     subdomains = get_subdomains(url)
     print('ack. subdomains')
 
-    self.update_state(state='PENDING', meta={'subdomains':subdomains})
+    self.update_state(state='PROGRESS', meta={'subdomains':subdomains})
 
     domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
 
@@ -210,7 +210,6 @@ def start_sublister():
     print(url)
     url = url.replace(" ", "")
     params = {'url': url}
-    args = ['sourcedns', 'targetdnlist']
     task = async_sublister.apply_async(args=[url])
     return jsonify({}), 202, {'Location': url_for('report_status', task_id=task.id)}
 
