@@ -252,7 +252,7 @@ def start_sublister():
 @app.route('/long_sublister_demo', methods=['GET', 'POST'])
 def long_sublister_demo():
     if request.method == 'GET':
-        return render_template('async_report.html', DOMAIN='onemedical.com', company_name='One Medical')
+        return render_template('async_report.html', DOMAIN='onemedical.com', company_name='One Medical Group')
 
 
 #### Visit /long_task_demo to test async requests with celery :)
