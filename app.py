@@ -167,12 +167,19 @@ def async_recon(self, url, company_name):
     self.update_state(state='PROGRESS', meta={'current': 4, 'total': total, 'status': 'Getting subdomains', 'result': growing_html})
 
 
+    scrape_employees_query = google_scraper.query('site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
+
+    scrape_jobs_query = google_scraper.query(
+        'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
+
+    growing_html += linkedin_details_html(scrape_employees_query, scrape_jobs_query)
+    self.update_state(state='PROGRESS', meta={'current': 5, 'total': total, 'status': 'Getting subdomains', 'result': growing_html})
+
     ## MULTITHREADING NOT ALLOWED
     #subdomains = sublist3r.main(url, None, ports=None, silent=True, verbose=True, engines=None)
     subdomains = get_subdomains(url)
-    print('acks. subdomains')
 
-    self.update_state(state='PROGRESS', meta={'current': 5, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_html})
+    self.update_state(state='PROGRESS', meta={'current': 6, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_html})
 
     domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
 

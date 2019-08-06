@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <link
-    href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"
+    href="https://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"
     rel="stylesheet"
     id="bootstrap-css"
     />
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+<script
+    src="https://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>
 <link
     href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css"
@@ -100,13 +101,13 @@
                 }
                 
                 if (data['state'] == 'COMPLETED') {
-                    $('#progress').toggle();
+                    $('#progress').hide();
                     $(status_div.childNodes[3]).text('Result: ' + data['state']);
                 }
                 else {
                     setTimeout(function() {
                         update_progress(status_url, nanobar, status_div);
-                    }, 5000);
+                    }, 2000);
                 }
             });
         }
