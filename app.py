@@ -142,7 +142,7 @@ def report():
 
 ## Actual task that finds content
 @celery.task(bind=True)
-def async_recon(self, url):
+def async_recon(self, url, company_name):
     """Background task retrieving subdomain information"""
     total = 10
     growing_html = ''
@@ -223,11 +223,12 @@ def report_status(task_id):
 def start_sublister():
     print('hit')
     url = str(request.json['url'])
+    company_name = str(request.json['company_name'])
     print('starting sublister!!')
     print(url)
     url = url.replace(" ", "")
     params = {'url': url}
-    task = async_recon.apply_async(args=[url])
+    task = async_recon.apply_async(args=[url, company_name])
     return jsonify({}), 202, {'Location': url_for('report_status', task_id=task.id)}
 
 
