@@ -147,7 +147,7 @@ def async_sublister(self, url):
     print(url)
     """Background task retrieving subdomain information"""
 
-    self.update_state(state='STARTED', meta={url: url})
+    self.update_state(state='STARTED', meta={'url': url})
     print('STARTED PROCESS WITH URL: ' + url)
     ## MULTITHREADING NOT ALLOWED
     #subdomains = sublist3r.main(url, None, ports=None, silent=True, verbose=True, engines=None)
@@ -158,12 +158,14 @@ def async_sublister(self, url):
 
     domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
 
-    print('HI')
+    print(domain_results)
 
     result = domain_html(domain_results)
+
+    print(result)
     
     #self.update_state(state='COMPLETED', meta={'status': 'Task completed!', 'result': result})
-    return {'state': 'COMPLETED', 'status': 'Task completed!', 'result': result}
+    return {'state': 'COMPLETED', 'current': 100, 'total': 100, 'status': 'Task completed!', 'result': result}
 
 
 # returns status of domain details 
@@ -187,9 +189,9 @@ def report_status(task_id):
     elif task.state != 'FAILURE':
         response = {
             'state': task.state,
-            'status': task.info.get('status', ''),
-            'current': 1,
-            'total': 1,
+            'status': 'COMPLETED',
+            'current': 2,
+            'total': 2,
         }
         if 'result' in task.info:
             response['result'] = task.info['result']

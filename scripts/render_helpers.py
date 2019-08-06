@@ -208,6 +208,8 @@ def format_single_table_row(domain, index):
     return growing_str
 
 def domain_html(subdomains):
+    print('FORMING INTO AN HTML BLOB')
+    
     tbody_str = ''
     for i in range(len(subdomains)):
         tbody_str += format_single_table_row(subdomains[i], i)
