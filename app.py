@@ -152,12 +152,13 @@ def async_sublister(self, url):
     ## MULTITHREADING NOT ALLOWED
     #subdomains = sublist3r.main(url, None, ports=None, silent=True, verbose=True, engines=None)
     subdomains = get_subdomains(url)
-    print('ack. subdomains')
+    print('acks. subdomains')
 
     self.update_state(state='PROGRESS', meta={'subdomains':subdomains})
 
     domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
 
+    print('finished domain results?')
     print(domain_results)
 
     result = domain_html(domain_results)
@@ -319,7 +320,6 @@ def taskstatus(task_id):
         }
         if 'result' in task.info:
             response['result'] = task.info['result']
-            response['html'] = domain_html(task.info['result'])
     else:
         # something went wrong in the background job
         response = {

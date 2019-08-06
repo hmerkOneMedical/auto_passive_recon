@@ -47,22 +47,20 @@ def add_domain_details(subdomains):
                     liveURL = True
                     try:
                         for x in res['data']:
-                            print x.keys()
                             if 'vulns' in x['opts']:
-                                print('updating!')
-                                print x['opts']['vulns']
+                                # print('updating!')
+                                # print x['opts']['vulns']
                                 try:
                                     vulns = vulns.extend(x['opts']['vulns'])
                                 except:
-                                    print 'here'
                                     pass
                             if 'http' in x.keys():
-                                print '[+] HTTP port present:\t'
-                                print '\tTitle: %s' % x['http']['title']
-                                print '\tRobots: %s' % x['http']['robots']
-                                print '\tServer: %s' % x['http']['server']
-                                print '\tComponents: %s' % x['http']['components']
-                                print '\tSitemap: %s' % x['http']['sitemap']
+                                # print '[+] HTTP port present:\t'
+                                # print '\tTitle: %s' % x['http']['title']
+                                # print '\tRobots: %s' % x['http']['robots']
+                                # print '\tServer: %s' % x['http']['server']
+                                # print '\tComponents: %s' % x['http']['components']
+                                # print '\tSitemap: %s' % x['http']['sitemap']
 
                                 liveURL = True
                     except:
@@ -80,6 +78,7 @@ def add_domain_details(subdomains):
             ipResults.append(addition)
             print(addition)
 
+    print('RETURNING VALUES HERE')
     return ipResults
 
 

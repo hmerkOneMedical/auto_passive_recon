@@ -53,6 +53,7 @@
                 nanobar.go(percent);
                 $(status_div.childNodes[1]).text(percent + '%');
                 $(status_div.childNodes[2]).text(data['status']);
+                console.log(data)
                 if (data['state'] != 'STARTED' && data['state'] != 'PROGRESS') {
                     if ('result' in data) {
                         console.log('actually here.')
