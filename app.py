@@ -81,14 +81,14 @@ def recon():
     for job in employees:
         job['description'] = filter(lambda x: x in printable, job['description'])
 
-    current_ip = os.getenv('NGROK_EXPOSED_IP', '0.0.0.0')
+    current_ip = os.environ.get('NGROK_EXPOSED_IP', '0.0.0.0')
 
     return render_template('report_details.html', EXPOSED_IP=current_ip, whois_result=whois_result, company_name=company_name, details=details, jobs=jobs, employees=employees, domain_results=domain_results, founder_emails=founder_emails)
 
 ## Renders dynamically. Why? Heroku limits requests to 30 seconds, and /recon route times out.
 @app.route('/report', methods=['POST'])
 def report():
-    current_ip = os.getenv('NGROK_EXPOSED_IP', '127.0.0.1:5000')
+    current_ip = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
 
     company_url = request.form['company_url']
     company_name = (request.form['company_name']).lower()
@@ -120,29 +120,75 @@ def report():
 
         yield linkedin_details_html(scrape_employees_query, scrape_jobs_query)
 
+        ## REPLACE this with async request !
         subdomains = sublist3r.main(
                 company_url, None, ports=None, silent=True, verbose=True, engines=None)
-
-        
+ 
         yield '<br>'
-
         domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
         yield domain_html(domain_results)
-        # # format_json_save('domain_results', domain_results)
+        ##
 
-        # data = {
-        #     'domain_results': domain_results, 
-        #     'employees': scrape_employees_query,
-        #     'jobs': scrape_jobs_query,
-        #     'details': details,
-        #     'founder_emails': founder_emails,
-        #     'whois_result': whois_result['data'],
-        # }
 
         yield report_footer_html()
     
     return Response(generate(), mimetype='text/html')
 
+## Actual task that finds content
+@celery.task(bind=True)
+def async_sublister(self, args=None, kwargs=None):
+    """Background task retrieving subdomain information"""
+
+    self.update_state(state='PENDING', meta={url: kwargs['url']})
+    print('STARTED PROCESS WITH URL: ' + kwargs['url'])
+    subdomains = sublist3r.main(kwargs['url'], None, ports=None, silent=True, verbose=True, engines=None)
+    
+    self.update_state(state='PENDING', meta={'subdomains':subdomains})
+
+    domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
+    
+    return {'status': 'Task completed!', 'result': domain_results}
+
+
+# returns status of domain details 
+@app.route('/report_status/<task_id>')
+def report_status(task_id):
+    task = async_sublister.AsyncResult(task_id)
+    if task.state == 'PENDING':
+        response = {
+            'state': task.state,
+            'status': 'Pending...'
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+            'status': task.info.get('status', '')
+        }
+        if 'result' in task.info:
+            response['result'] = task.info['result']
+    else:
+        # something went wrong in the background job
+        response = {
+            'state': task.state,
+            'current': 1,
+            'total': 1,
+            'status': str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)
+
+@app.route('/start_sublister')
+def longtask():
+    url = request.args.get('url')
+
+    task = async_sublister.apply_async(args=None, kwargs={'url':url})
+    return jsonify({}), 202, {'Location': url_for('report_status', task_id=task.id)}
+
+## TODO: send get request to /start_sublister with url as an argument!!!
+
+
+
+
+#### Visit /long_task_demo to test async requests with celery :)
 @celery.task(bind=True)
 def long_task(self):
     print('hereeeeee')
