@@ -142,37 +142,50 @@ def report():
 
 ## Actual task that finds content
 @celery.task(bind=True)
-def async_sublister(self, url):
+def async_recon(self, url):
+    """Background task retrieving subdomain information"""
+    total = 10
+    growing_html = ''
     print('celery task under works')
     print(url)
-    """Background task retrieving subdomain information"""
+    
+    self.update_state(state='STARTED', meta={'url': url, 'current': 1, 'total': total, 'status': 'Getting company basics', 'result': growing_html})
 
-    self.update_state(state='STARTED', meta={'url': url})
-    print('STARTED PROCESS WITH URL: ' + url)
+    details = scrape_crunchbase.run_basics(company_name)
+    growing_html += details_html(details) 
+    self.update_state(state='PROGRESS', meta={'current': 2, 'total': total, 'status': 'Getting summary', 'result': growing_html})
+    
+    growing_html += report_summary_html()
+    self.update_state(state='PROGRESS', meta={'current': 3, 'total': total, 'status': 'Getting founders', 'result': growing_html})
+
+    founder_emails = []
+    if details:
+        for founder in details['founders']:
+            founder_emails.append(hunter.get_work_email(company_url, founder))
+
+    growing_html += non_automated_checks(company_name, founder_emails)
+    self.update_state(state='PROGRESS', meta={'current': 4, 'total': total, 'status': 'Getting subdomains', 'result': growing_html})
+
+
     ## MULTITHREADING NOT ALLOWED
     #subdomains = sublist3r.main(url, None, ports=None, silent=True, verbose=True, engines=None)
     subdomains = get_subdomains(url)
     print('acks. subdomains')
 
-    self.update_state(state='PROGRESS', meta={'subdomains':subdomains})
+    self.update_state(state='PROGRESS', meta={'current': 5, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_html})
 
     domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
 
-    print('finished domain results?')
-    print(domain_results)
-
-    result = domain_html(domain_results)
-
-    print(result)
+    growing_html += domain_html(domain_results)
     
     #self.update_state(state='COMPLETED', meta={'status': 'Task completed!', 'result': result})
-    return {'state': 'COMPLETED', 'current': 100, 'total': 100, 'status': 'Task completed!', 'result': result}
+    return {'state': 'COMPLETED', 'current': 100, 'total': 100, 'status': 'Task completed!', 'result': growing_html}
 
 
 # returns status of domain details 
 @app.route('/report_status/<task_id>')
 def report_status(task_id):
-    task = async_sublister.AsyncResult(task_id)
+    task = async_recon.AsyncResult(task_id)
     if task.state == 'STARTED':
         response = {
             'state': task.state,
@@ -214,7 +227,7 @@ def start_sublister():
     print(url)
     url = url.replace(" ", "")
     params = {'url': url}
-    task = async_sublister.apply_async(args=[url])
+    task = async_recon.apply_async(args=[url])
     return jsonify({}), 202, {'Location': url_for('report_status', task_id=task.id)}
 
 
@@ -235,14 +248,10 @@ def start_sublister():
 # launch redis db.
 
 
-
-## TODO: send get request to /start_sublister with url as an argument!!!
-
 @app.route('/long_sublister_demo', methods=['GET', 'POST'])
 def long_sublister_demo():
     if request.method == 'GET':
-        return render_template('async_report.html', DOMAIN='onemedical.com')
-
+        return render_template('async_report.html', DOMAIN='onemedical.com', company_name='One Medical')
 
 
 #### Visit /long_task_demo to test async requests with celery :)

@@ -1,3 +1,5 @@
+import os
+
 def report_header_html(company_name):
     return '''
     <!DOCTYPE html>
@@ -169,7 +171,7 @@ def non_automated_checks(company_name, founder_emails):
       </script>'''
 
 def format_single_table_row(domain, index):
-    EXPOSED_IP = 'http://127.0.0.1:5000'
+    EXPOSED_IP = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
     tool_str = ''
     print(domain)
     for tool_type in domain['builtwith']:
@@ -209,7 +211,7 @@ def format_single_table_row(domain, index):
 
 def domain_html(subdomains):
     print('FORMING INTO AN HTML BLOB')
-    
+
     tbody_str = ''
     for i in range(len(subdomains)):
         tbody_str += format_single_table_row(subdomains[i], i)
