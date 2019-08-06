@@ -161,7 +161,7 @@ def async_recon(self, url, company_name):
     founder_emails = []
     if details:
         for founder in details['founders']:
-            founder_emails.append(hunter.get_work_email(company_url, founder))
+            founder_emails.append(hunter.get_work_email(url, founder))
 
     growing_html += non_automated_checks(company_name, founder_emails)
     self.update_state(state='PROGRESS', meta={'current': 4, 'total': total, 'status': 'Getting subdomains', 'result': growing_html})
@@ -196,9 +196,9 @@ def report_status(task_id):
     elif task.state == 'PROGRESS':
         response = {
             'state': task.state,
-            'status': 'PROGRESS...',
-            'current': 1,
-            'total': 2,
+            'current': task.info.get('current', 0),
+            'total': task.info.get('total', 1),
+            'status': task.info.get('status', '')
         }
     elif task.state != 'FAILURE':
         response = {
