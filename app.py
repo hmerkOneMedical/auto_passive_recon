@@ -149,7 +149,7 @@ def async_recon(self, url, company_name):
     print('celery task under works')
     print(url)
     
-    self.update_state(state='STARTED', meta={'url': url, 'current': 1, 'total': total, 'status': 'Getting company basics', 'result': growing_html})
+    self.update_state(state='PROGRESS', meta={'url': url, 'current': 1, 'total': total, 'status': 'Getting company basics', 'result': growing_html})
 
     details = scrape_crunchbase.run_basics(company_name)
     growing_html += details_html(details) 
@@ -178,7 +178,6 @@ def async_recon(self, url, company_name):
 
     growing_html += domain_html(domain_results)
     
-    #self.update_state(state='COMPLETED', meta={'status': 'Task completed!', 'result': result})
     return {'state': 'COMPLETED', 'current': 100, 'total': 100, 'status': 'Task completed!', 'result': growing_html}
 
 
@@ -227,7 +226,6 @@ def start_sublister():
     print('starting sublister!!')
     print(url)
     url = url.replace(" ", "")
-    params = {'url': url}
     task = async_recon.apply_async(args=[url, company_name])
     return jsonify({}), 202, {'Location': url_for('report_status', task_id=task.id)}
 
@@ -249,10 +247,16 @@ def start_sublister():
 # launch redis db.
 
 
-@app.route('/long_sublister_demo', methods=['GET', 'POST'])
-def long_sublister_demo():
+@app.route('/async_recon_report', methods=['GET', 'POST'])
+def async_recon_report():
+    if request.method == 'POST':
+        company_url = request.form['company_url']
+        company_name = (request.form['company_name']).lower()
+        return render_template('async_report.html', DOMAIN=company_url, company_name=company_name)
+
     if request.method == 'GET':
-        return render_template('async_report.html', DOMAIN='onemedical.com', company_name='One Medical Group')
+        return redirect(url_for('index'))
+        #return render_template('async_report.html', DOMAIN='onemedical.com', company_name='One Medical Group')
 
 
 #### Visit /long_task_demo to test async requests with celery :)

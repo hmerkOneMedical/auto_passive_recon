@@ -62,9 +62,9 @@
         <div class="data-here"></div>
 
         <script>
-        function start_long_task(DOMAIN) {
+        function start_long_task() {
             // add task status elements
-            div = $('<div class="progress"><div></div><div>0%</div><div>...</div><div>&nbsp;</div></div><hr>');
+            div = $('<div id="progress" class="progress"><div></div><div>0%</div><div>...</div><div>&nbsp;</div></div><hr>');
             $('#progress').append(div);
             // create a progress bar
             var nanobar = new Nanobar({
@@ -75,11 +75,10 @@
             $.ajax({
                 type: 'POST',
                 url: '/start_sublister',
-                data: JSON.stringify({url: DOMAIN, company_name: "{{company_name}}"}),
+                data: JSON.stringify({url: "{{DOMAIN}}", company_name: "{{company_name}}"}),
                 contentType: 'application/json;charset=UTF-8',
                 success: function(data, status, request) {
                     status_url = request.getResponseHeader('Location');
-                    console.log('?')
                     update_progress(status_url, nanobar, div[0]);
                 },
                 error: function() {
@@ -95,28 +94,27 @@
                 nanobar.go(percent);
                 $(status_div.childNodes[1]).text(percent + '%');
                 $(status_div.childNodes[2]).text(data['status']);
-                console.log(data)
+
                 if ('result' in data) {
-                    console.log('actually here.')
                     $( ".data-here" ).html(  data['result'] );
                 }
                 
-                if (data['state'] != 'STARTED' && data['state'] != 'PROGRESS') {
-                    // something unexpected happened
+                if (data['state'] == 'COMPLETED') {
+                    $('#progress').toggle();
                     $(status_div.childNodes[3]).text('Result: ' + data['state']);
                 }
                 else {
-                    // rerun in 2 seconds
                     setTimeout(function() {
-                        console.log('HELLLO')
                         update_progress(status_url, nanobar, status_div);
                     }, 5000);
                 }
             });
         }
-           
+
+        start_long_task();
+
     </script>
-        <button id="start-bg-job" onclick='start_long_task(" {{DOMAIN}}" )'>Start
-            Long Calculation</button><br><br>
+        <!-- <button id="start-bg-job" onclick="start_long_task()">Start
+            Long Calculation</button><br><br> -->
     </body>
 </html>
