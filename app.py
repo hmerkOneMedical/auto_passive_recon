@@ -159,9 +159,11 @@ def async_sublister(self, url):
     domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
 
     print('HI')
+
+    result = domain_html(domain_results)
     
-    self.update_state(state='COMPLETED', meta={'status': 'Task completed!', 'result': domain_results})
-    return {'state': 'COMPLETED', 'status': 'Task completed!', 'result': domain_results}
+    #self.update_state(state='COMPLETED', meta={'status': 'Task completed!', 'result': result})
+    return {'state': 'COMPLETED', 'status': 'Task completed!', 'result': result}
 
 
 # returns status of domain details 
@@ -191,7 +193,6 @@ def report_status(task_id):
         }
         if 'result' in task.info:
             response['result'] = task.info['result']
-            response['html'] = domain_html(task.info['result'])
     else:
         # something went wrong in the background job
         response = {

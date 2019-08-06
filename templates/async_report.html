@@ -55,9 +55,10 @@
                 $(status_div.childNodes[2]).text(data['status']);
                 if (data['state'] != 'STARTED' && data['state'] != 'PROGRESS') {
                     if ('result' in data) {
+                        console.log('actually here.')
                         // show result
-                        $(status_div.childNodes[3]).text('Result: ' + data['result']);
-                        $( ".data-here" ).append(  data['html'] );
+                        $(status_div.childNodes[3]).text('Result: Done');
+                        $( ".data-here" ).append(  data['result'] );
                     }
                     else {
                         // something unexpected happened
@@ -75,7 +76,7 @@
         }
            
     </script>
-        <button id="start-bg-job" onclick='start_long_task("{{DOMAIN}}")'>Start
+        <button id="start-bg-job" onclick='start_long_task(" {{DOMAIN}}" )'>Start
             Long Calculation</button><br><br>
     </body>
 </html>
