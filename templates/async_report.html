@@ -75,7 +75,7 @@
             // send ajax POST request to start background job
             $.ajax({
                 type: 'POST',
-                url: '/start_sublister',
+                url: '/launch_recon',
                 data: JSON.stringify({url: "{{DOMAIN}}", company_name: "{{company_name}}"}),
                 contentType: 'application/json;charset=UTF-8',
                 success: function(data, status, request) {

@@ -60,15 +60,13 @@ def frame():
 
     return '<div style="max-width: 100%; height: auto"><img style="max-width: 100%; height: auto" src="'+decodedScreenie+'"/></div>'
 
-## Statically renders report template
+## Statically renders report template ==> works only on localhost.
 @app.route('/recon', methods=['POST'])
 def recon():
     company_url = request.form['company_url']
     company_name = (request.form['company_name']).lower()
     current_ip = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
 
-    # session['company_url'] = company_url
-    # session['company_name'] = company_name
     local = False
     if current_ip == '127.0.0.1:5000':
         local = True
@@ -92,6 +90,7 @@ def recon():
     return render_template('report_details.html', EXPOSED_IP=current_ip, whois_result=whois_result, company_name=company_name, details=details, jobs=jobs, employees=employees, domain_results=domain_results, founder_emails=founder_emails)
 
 ## Renders dynamically. Why? Heroku limits requests to 30 seconds, and /recon route times out.
+### Note. This still does not work! the sublist3r method takes too long.
 @app.route('/report', methods=['POST'])
 def report():
     current_ip = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
@@ -99,17 +98,12 @@ def report():
     company_url = request.form['company_url']
     company_name = (request.form['company_name']).lower()
 
-    # session['company_url'] = company_url
-    # session['company_name'] = company_name
-
     def generate():
-        #session['test'] = 'yes'
         yield report_header_html(company_name)
 
         details = scrape_crunchbase.run_basics(company_name)
         
         yield details_html(details) 
-
         yield report_summary_html()
     
         founder_emails = []
@@ -139,6 +133,23 @@ def report():
         yield report_footer_html()
     
     return Response(generate(), mimetype='text/html')
+
+
+## What is Celery? Allows async functions running on a seperate worker. 
+# 1. kickoff function
+#     task = func.apply_async(args, kwargs...)
+#         return jsonify({}), 202, {'Location': url_for('STATUS_ENDPOINT', task_id=task.id)}
+# 2. STATUS_ENDPOINT/<id>
+#     task = func.AsyncResult(id)
+#     from task.state, determine what response should be. Reformat, etc.
+#     return jsonify(response)
+# 3. func:
+#     updates status, sends requests, etc. 
+
+## Launching celery: 
+# upgrade worker
+# launch redis db.
+
 
 ## Actual task that finds content
 @celery.task(bind=True)
@@ -188,7 +199,7 @@ def async_recon(self, url, company_name):
     return {'state': 'COMPLETED', 'current': 100, 'total': 100, 'status': 'Task completed!', 'result': growing_html}
 
 
-# returns status of domain details 
+# returns status of recon attempt 
 @app.route('/report_status/<task_id>')
 def report_status(task_id):
     task = async_recon.AsyncResult(task_id)
@@ -215,8 +226,7 @@ def report_status(task_id):
         }
         if 'result' in task.info:
             response['result'] = task.info['result']
-    else:
-        # something went wrong in the background job
+    else: # error
         response = {
             'state': task.state,
             'current': 1,
@@ -225,34 +235,13 @@ def report_status(task_id):
         }
     return jsonify(response)
 
-@app.route('/start_sublister', methods=['POST'])
-def start_sublister():
-    print('hit')
+@app.route('/launch_recon', methods=['POST'])
+def launch_recon():
     url = str(request.json['url'])
-    company_name = str(request.json['company_name'])
-    print('starting sublister!!')
-    print(url)
     url = url.replace(" ", "")
+    company_name = str(request.json['company_name'])
     task = async_recon.apply_async(args=[url, company_name])
     return jsonify({}), 202, {'Location': url_for('report_status', task_id=task.id)}
-
-
-
-## WTF is Celery? Allows async functions running on a seperate worker. 
-# 1. kickoff function
-#     task = func.apply_async(args, kwargs...)
-#         return jsonify({}), 202, {'Location': url_for('STATUS_ENDPOINT', task_id=task.id)}
-# 2. STATUS_ENDPOINT/<id>
-#     task = func.AsyncResult(id)
-#     from task.state, determine what response should be. Reformat, etc.
-#     return jsonify(response)
-# 3. func:
-#     updates status, sends requests, etc. 
-
-## Launching celery: 
-# upgrade worker
-# launch redis db.
-
 
 @app.route('/async_recon_report', methods=['GET', 'POST'])
 def async_recon_report():
@@ -263,95 +252,6 @@ def async_recon_report():
 
     if request.method == 'GET':
         return redirect(url_for('index'))
-        #return render_template('async_report.html', DOMAIN='onemedical.com', company_name='One Medical Group')
-
-
-#### Visit /long_task_demo to test async requests with celery :)
-@celery.task(bind=True)
-def long_task(self):
-    print('hereeeeee')
-    """Background task that runs a long function with progress reports."""
-    verb = ['Starting up', 'Booting', 'Repairing', 'Loading', 'Checking']
-    adjective = ['master', 'radiant', 'silent', 'harmonic', 'fast']
-    noun = ['solar array', 'particle reshaper', 'cosmic ray', 'orbiter', 'bit']
-    message = ''
-    total = random.randint(10, 50)
-    print('now here')
-    for i in range(total):
-        if not message or random.random() < 0.25:
-            message = '{0} {1} {2}...'.format(random.choice(verb),
-                                              random.choice(adjective),
-                                              random.choice(noun))
-        self.update_state(state='PROGRESS',
-                          meta={'current': i, 'total': total,
-                                'status': message})
-        time.sleep(1)
-    return {'current': 100, 'total': 100, 'status': 'Task completed!',
-            'result': 42}
-
-
-@app.route('/long_task_demo', methods=['GET', 'POST'])
-def long_task_demo():
-    if request.method == 'GET':
-        return render_template('long_task.html', )
-
-    # # send the email
-    # email_data = {
-    #     'subject': 'Hello from Flask',
-    #     'to': email,
-    #     'body': 'This is a test email sent from a background Celery task.'
-    # }
-    # if request.form['submit'] == 'Send':
-    #     # send right away
-    #     send_async_email.delay(email_data)
-    #     flash('Sending email to {0}'.format(email))
-    # else:
-    #     # send in one minute
-    #     send_async_email.apply_async(args=[email_data], countdown=60)
-    #     flash('An email will be sent to {0} in one minute'.format(email))
-
-    return redirect(url_for('long_task_demo'))
-
-
-@app.route('/longtask', methods=['POST'])
-def longtask():
-    print('hit')
-    task = long_task.apply_async()
-    print('help.')
-    return jsonify({}), 202, {'Location': url_for('taskstatus',
-                                                  task_id=task.id)}
-
-
-@app.route('/status/<task_id>')
-def taskstatus(task_id):
-    task = long_task.AsyncResult(task_id)
-    if task.state == 'PENDING':
-        response = {
-            'state': task.state,
-            'current': 0,
-            'total': 1,
-            'status': 'Pending...'
-        }
-    elif task.state != 'FAILURE':
-        response = {
-            'state': task.state,
-            'current': task.info.get('current', 0),
-            'total': task.info.get('total', 1),
-            'status': task.info.get('status', '')
-        }
-        if 'result' in task.info:
-            response['result'] = task.info['result']
-    else:
-        # something went wrong in the background job
-        response = {
-            'state': task.state,
-            'current': 1,
-            'total': 1,
-            'status': str(task.info),  # this is the exception raised
-        }
-    return jsonify(response)
-
 
 if __name__ == '__main__':
-    #app.run(host='0.0.0.0', port=3003)
     app.run()
