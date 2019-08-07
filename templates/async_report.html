@@ -65,8 +65,8 @@
       </h4>
 
       <!--<button onclick="start_long_task();">Start Long Calculation</button><br><br>-->
-      <script src="//cdnjs.cloudflare.com/ajax/libs/nanobar/0.2.1/nanobar.min.js"></script>
-      <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/nanobar/0.2.1/nanobar.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
       <div id="progress"></div>
     </div>
     <hr />
@@ -215,78 +215,7 @@
       <div class="linkedin-details-inner">LOADING...</div>
     </div>
 
-    <script>
-      function start_long_task() {
-        // add task status elements
-        div = $(
-          '<div id="progress" class="progress"><div></div><div>0%</div><div>...</div><div>&nbsp;</div></div>'
-        );
-        $('#progress').append(div);
-        // create a progress bar
-        var nanobar = new Nanobar({
-          bg: '#44f',
-          target: div[0].childNodes[0],
-        });
-        // send ajax POST request to start background job
-        $.ajax({
-          type: 'POST',
-          url: '/launch_recon',
-          data: JSON.stringify({
-            url: '{{DOMAIN}}',
-            company_name: '{{company_name}}',
-          }),
-          contentType: 'application/json;charset=UTF-8',
-          success: function(data, status, request) {
-            status_url = request.getResponseHeader('Location');
-            update_progress(status_url, nanobar, div[0]);
-          },
-          error: function() {
-            alert('Unexpected error');
-          },
-        });
-      }
-      function update_progress(status_url, nanobar, status_div) {
-        // send GET request to status URL
-        $.getJSON(status_url, function(data) {
-          // update UI
-          percent = parseInt((data['current'] * 100) / data['total']);
-          nanobar.go(percent);
-          $(status_div.childNodes[1]).text(percent + '%');
-          $(status_div.childNodes[2]).text(data['status']);
-
-          if ('result' in data) {
-            //$('.data-here').html(data['result']);
-
-            if ('company-details' in data['result']) {
-                $('.company-details').html(data['result']['company-details']);
-            }
-
-            if ('founder-emails-compro' in data['result']) {
-                $('.founder-emails-compro').html(data['result']['founder-emails-compro']);
-            }
-
-            if ('domain-details-inner' in data['result']) {
-                $('.domain-details-inner').html(data['result']['domain-details-inner']);
-            }
-
-            if ('linkedin-details-inner' in data['result']) {
-                $('.linkedin-details-inner').html(data['result']['linkedin-details-inner']);
-            }
-          }
-
-          if (data['state'] == 'COMPLETED' || data['state'] == 'SUCCESS') {
-            $('.progress').hide();
-            $(status_div.childNodes[3]).text('Result: ' + data['state']);
-          } else {
-            setTimeout(function() {
-              update_progress(status_url, nanobar, status_div);
-            }, 2000);
-          }
-        });
-      }
-
-      start_long_task();
-    </script>
+    
     <!-- <button id="start-bg-job" onclick="start_long_task()">Start
             Long Calculation</button><br><br> -->
   </body>
