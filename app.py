@@ -196,6 +196,7 @@ def async_recon(self, url, company_name):
     ## MULTITHREADING NOT ALLOWED
     #subdomains = sublist3r.main(url, None, ports=None, silent=True, verbose=True, engines=None)
     subdomains = get_subdomains(url)
+    subdomains.append(url)
 
     self.update_state(state='PROGRESS', meta={'current': 6, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_html})
 
