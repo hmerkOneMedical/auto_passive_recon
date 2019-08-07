@@ -39,7 +39,7 @@ def founder_emails_compro(company_name, founder_emails):
                 check ''' + ", ".join(founder_emails) + ''' </h5>'''
 
 def format_single_table_row(domain, index):
-    EXPOSED_IP = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
+    EXPOSED_IP = os.environ.get('HOSTED_IP', '127.0.0.1:5000')
     tool_str = ''
     print(domain)
     if 'builtwith' in domain:

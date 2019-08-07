@@ -69,7 +69,7 @@ def frame():
 def recon():
     company_url = request.form['company_url']
     company_name = (request.form['company_name']).lower()
-    current_ip = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
+    current_ip = os.environ.get('HOSTED_IP', '127.0.0.1:5000')
 
     local = False
     if current_ip == '127.0.0.1:5000':
@@ -97,10 +97,14 @@ def recon():
 ### Note. This still does not work! the sublist3r method takes too long.
 @app.route('/report', methods=['POST'])
 def report():
-    current_ip = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
+    current_ip = os.environ.get('HOSTED_IP', '127.0.0.1:5000')
 
     company_url = request.form['company_url']
     company_name = (request.form['company_name']).lower()
+
+    ## cannot at the moment run sublist3r when hosted. :(
+    if current_ip != '127.0.0.1:5000':
+        return redirect(url_for('async_recon_report', company_name=company_name, company_url=company_url))
 
     def generate():
         yield report_header_html(company_name)
@@ -125,14 +129,13 @@ def report():
         yield linkedin_details_html(scrape_employees_query, scrape_jobs_query)
 
         ## REPLACE this with async request !
-        subdomains = get_subdomains(company_url)
-        #sublist3r.main(company_url, None, ports=None, silent=True, verbose=True, engines=None)
+        #subdomains = get_subdomains(company_url)
+        subdomains = sublist3r.main(company_url, None, ports=None, silent=True, verbose=True, engines=None)
  
         yield '<br>'
         domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
         yield domain_html(domain_results)
         ##
-
 
         yield report_footer_html()
     

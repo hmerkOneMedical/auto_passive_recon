@@ -1,3 +1,7 @@
+## Passive Reconnaissance
+
+An attempt to gain information about targeted company without actively engaging. In active reconnaissance, the attacker engages with the target system directly.
+
 ## About
 
 Passive recon script integrating several tools:
@@ -6,6 +10,8 @@ Passive recon script integrating several tools:
 - [sublist3r](https://github.com/aboul3la/Sublist3r)
 - [shodan](https://www.shodan.io/)
 - google scraping
+
+\*\* Note: Heroku has a request timeout of 30 seconds, requiring celery workers to run scripts asyncronously. However, these do not permit threading. Sublist3r depends on multithreading, so in order to get the most accurate results, run this in command line or on localhost. The hosted heroku app used a different subdomain enumeration tool which provides less results.
 
 # Running Passive Recon
 
@@ -38,7 +44,7 @@ python app.py
 
 Visit [127.0.0.1:5000/](http://127.0.0.1:5000/)
 
-## Deployed
+## Deploy your own on Heroku
 
 ### Setup
 

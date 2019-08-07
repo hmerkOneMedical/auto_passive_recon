@@ -2,20 +2,27 @@ import os
 
 def report_header_html(company_name):
     return '''
-    <!DOCTYPE html>
+       <!DOCTYPE html>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+
+        <!-- Latest compiled and minified CSS -->
         <link
-            href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"
-            rel="stylesheet"
-            id="bootstrap-css"
-            />
-        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.min.js"></script>
+        rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"
+        />
+
+        <!-- jQuery library -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+        <!-- Latest compiled JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
         <link
-            href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css"
-            rel="stylesheet">
-        <script
-            src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+        href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css"
+        rel="stylesheet"
+        />
+        <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
         <!------ Include the above in your HEAD tag ---------->
         <html>
             <head>
@@ -109,7 +116,7 @@ def report_summary_html():
                     <li class="list-group-item" id="toggle_high_amt_text"
                         style="display:none;">The vast number of
                         (sub)domains increases security risk.</li>
-                    <li class="list-group-item" id="toggle_vuln_text"
+                    <li class="list-group-item" id="disclaimer"
                         style="display:block;">Because of the time boxed nature
                         of the reconnaissance and because only publicly
                         available data sources were used, this report is not
@@ -136,10 +143,6 @@ def non_automated_checks(company_name, founder_emails):
                     data-off="No"
                     id="toggle_pwned"
                     />
-                    <div id="test-style-addition" class="custom-control custom-switch">
-                    <input type="checkbox" class="custom-control-input" id="customSwitches">
-                    <label class="custom-control-label" for="customSwitches"></label>
-                    </div>
             </div>
             <h5 style="display: inline-block; width: 50%; vertical-align:top;">Have
                 there been previous security breaches?</h5>
@@ -175,7 +178,7 @@ def non_automated_checks(company_name, founder_emails):
       </script>'''
 
 def format_single_table_row(domain, index):
-    EXPOSED_IP = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
+    EXPOSED_IP = os.environ.get('HOSTED_IP', '127.0.0.1:5000')
     tool_str = ''
     print(domain)
     for tool_type in domain['builtwith']:
