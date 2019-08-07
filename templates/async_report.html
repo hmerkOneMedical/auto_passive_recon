@@ -46,21 +46,16 @@
       Passive Recon Report: {{ company_name }}
     </h1>
 
-    <input
-          type="checkbox"
-          data-toggle="toggle"
-          data-on="Yes"
-          data-off="No"
-          id="toggle_ANYTHING"
-        />
+    <input id="toggle-event" type="checkbox" data-toggle="toggle">
+    <div id="console-event"></div>
     <script>
     $(function() {
-        $('#toggle_ANYTHING').change(function() {
-            console.log('toggle_ANYTHING??')
+        $('#toggle-event').change(function() {
+        $('#console-event').html('Toggle: ' + $(this).prop('checked'))
         })
     })
     </script>
-
+    
     <div class="dontprint">
       <hr />
       <h4><a target="_blank" href="/">Start Over</a></h4>

@@ -42,7 +42,7 @@ def format_single_table_row(domain, index):
     EXPOSED_IP = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
     tool_str = ''
     print(domain)
-    if 'builtwith' in tool_type:
+    if 'builtwith' in domain:
         for tool_type in domain['builtwith']:
             try:
                 combinedTools = ', '.join(domain['builtwith'][tool_type])
