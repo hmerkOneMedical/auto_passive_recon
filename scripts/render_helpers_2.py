@@ -42,8 +42,14 @@ def format_single_table_row(domain, index):
     EXPOSED_IP = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
     tool_str = ''
     print(domain)
-    for tool_type in domain['builtwith']:
-        tool_str += tool_type +': '+ ', '.join(domain['builtwith'][tool_type]) + '<br>'
+    if 'builtwith' in tool_type:
+        for tool_type in domain['builtwith']:
+            try:
+                combinedTools = ', '.join(domain['builtwith'][tool_type])
+            except:
+                combinedTools = domain['builtwith'][tool_type][0]
+
+            tool_str += tool_type +': '+ combinedTools  + '<br>'
 
     vuln_str = ''
     for vuln in domain['vulns']:
