@@ -65,7 +65,7 @@
     <hr />
     
     <!-- Report details -->
-    <div class="card" style="width: 49%; display: inline-block;
+    <div class="card" style="width: 100%; display: inline-block;
       vertical-align:top;">
       <div class="card-body">
         <h3 class="card-title">Report Summary</h3>
@@ -103,40 +103,40 @@
       <hr />
       <!-- -->
 
-      <h3 style="page-break-before: always">Non-Automated Checks:</h3>
-      <div>
-      <div style="display: inline-block;" class="founder-emails-compro">
-          <h5 style="display: inline-block; width: 50%; vertical-align:top;">
-            Have founder emails been compromised?
-        </h5>
+        <h3 style="page-break-before: always">Non-Automated Checks:</h3>
+        <div>
+            <div style="display: inline-block;width: 60%;" class="founder-emails-compro">
+                <h5 style="display: inline-block; vertical-align:top;">
+                    Have founder emails been compromised?
+                </h5>
+            </div>
+            <div style="display: inline-block; vertical-align:top; right: 40%;">
+                <input
+                type="checkbox"
+                data-toggle="toggle"
+                data-on="Yes"
+                data-off="No"
+                id="toggle_pwned"
+                />
+            </div>
         </div>
+        <h5 style="display: inline-block; width: 60%; vertical-align:top;">Have
+            there been previous security breaches?</h5>
         <div style="display: inline-block; vertical-align:top; right: 40%;">
-            <input
+        <input
             type="checkbox"
             data-toggle="toggle"
             data-on="Yes"
             data-off="No"
-            id="toggle_pwned"
+            id="toggle_breach"
             />
         </div>
+        <br>
+        <div class="dontprint">
+        <iframe style="outline:none;width: 500px;height: 500px;"
+            src="https://www.google.com/search?igu=1&ei=&q={{company_name}}+breach"
+            style=></iframe>
         </div>
-      <h5 style="display: inline-block; width: 50%; vertical-align:top;">Have
-            there been previous security breaches?</h5>
-          <div style="display: inline-block; vertical-align:top; right: 40%;">
-            <input
-              type="checkbox"
-              data-toggle="toggle"
-              data-on="Yes"
-              data-off="No"
-              id="toggle_breach"
-              />
-          </div>
-          <br>
-          <div class="dontprint">
-            <iframe style="outline:none;width: 500px;height: 500px;"
-              src="https://www.google.com/search?igu=1&ei=&q={{company_name}}+breach"
-              style=></iframe>
-          </div>
     </div>
     <script>
     $(function() {
@@ -155,8 +155,8 @@
 
     <div class="domain-details">
       <h3>Domain Details</h3>
-      <h5 style="display: inline-block; width: 50%; vertical-align:top;">
-        Are there significant vulnerabilities detected in enumerated
+      <h5 style="display: inline-block; width: 60%; vertical-align:top;">
+        Are there significant vulnerabilities detected in the below enumerated
         (sub)domains?
       </h5>
       <div style="display: inline-block; vertical-align:top; right: 40%;">
@@ -182,7 +182,7 @@
 
     <div class="linkedin-details">
       <h3>LinkedIn Details</h3>
-      <h5 style="display: inline-block; width: 50%;">
+      <h5 style="display: inline-block; width: 60%;">
         Information available online regarding open positions and current
         employees, specifically with "Cyber" or "Security" in their title. These
         may all be false positives. Do the results indicate a concerning/lack of

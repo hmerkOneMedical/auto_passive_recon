@@ -117,12 +117,12 @@ def report():
 
         yield non_automated_checks(company_name, founder_emails)
 
-        # scrape_employees_query = google_scraper.query('site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
+        scrape_employees_query = google_scraper.query('site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
 
-        # scrape_jobs_query = google_scraper.query(
-        # 'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
+        scrape_jobs_query = google_scraper.query(
+        'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
 
-        # yield linkedin_details_html(scrape_employees_query, scrape_jobs_query)
+        yield linkedin_details_html(scrape_employees_query, scrape_jobs_query)
 
         ## REPLACE this with async request !
         subdomains = get_subdomains(company_url)
@@ -192,14 +192,16 @@ def async_recon(self, url, company_name):
     growing_inner['founder-emails-compro'] = founder_emails_compro(company_name, founder_emails)
     self.update_state(state='PROGRESS', meta={'current': 4, 'total': total, 'status': 'Getting subdomains', 'result': growing_inner})
 
+    try:
+        scrape_employees_query = google_scraper.query('site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
 
-    # scrape_employees_query = google_scraper.query('site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
+        scrape_jobs_query = google_scraper.query(
+            'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
 
-    # scrape_jobs_query = google_scraper.query(
-    #     'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
-
-    # #growing_html += linkedin_details_html(scrape_employees_query, scrape_jobs_query)
-    # growing_inner['linkedin-details-inner'] = linkedin_details_inner(scrape_employees_query, scrape_jobs_query)
+        #growing_html += linkedin_details_html(scrape_employees_query, scrape_jobs_query)
+        growing_inner['linkedin-details-inner'] = linkedin_details_inner(scrape_employees_query, scrape_jobs_query)
+    except:
+        growing_inner['linkedin-details-inner'] = 'Google has blocked this query :/'
 
     self.update_state(state='PROGRESS', meta={'current': 5, 'total': total, 'status': 'Getting subdomains', 'result': growing_inner})
 

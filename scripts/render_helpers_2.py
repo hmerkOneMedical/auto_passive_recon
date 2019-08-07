@@ -8,7 +8,7 @@ def company_details(details):
         online_info += '<br>'
 
     return '''
-        <div class="card" style="width: 49%; display: inline-block;">
+        <div class="card" style="width: 100%; display: inline-block;">
             <div class="card-body">
                 <h3 class="card-title">Company Details</h3>
                 <ul class="list-group list-group-flush">
@@ -33,7 +33,7 @@ def company_details(details):
 
 def founder_emails_compro(company_name, founder_emails):
     return '''
-            <h5 style="display: inline-block; width: 50%; vertical-align:top;">Have
+            <h5 style="display: inline-block; vertical-align:top;">Have
                 founder emails been compromised? Visit <a target="_blank"
                     href="https://haveibeenpwned.com">HaveIBeenPwned</a> to
                 check ''' + ", ".join(founder_emails) + ''' </h5>'''
