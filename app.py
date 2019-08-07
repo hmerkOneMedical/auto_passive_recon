@@ -136,15 +136,22 @@ def report():
 
 
 ## What is Celery? Allows async functions running on a seperate worker. 
-# 1. kickoff function
-#     task = func.apply_async(args, kwargs...)
-#         return jsonify({}), 202, {'Location': url_for('STATUS_ENDPOINT', task_id=task.id)}
-# 2. STATUS_ENDPOINT/<id>
-#     task = func.AsyncResult(id)
+# 1. CELERY TASK  
+#     @celery.task(bind=True)
+#     def celery_task_func(self, arg1, arg2):
+#        updates status, sends requests, etc.
+
+# 2. START CELERY TASK WITH ARGUMENTS
+#     // can happen anywhere. return endpoint for status checks
+#     task = celery_task_func.apply_async(args=(arg1, arg2))
+#     return jsonify({}), 202, {'Location': url_for('STATUS_ENDPOINT', task_id=task.id)}
+
+# 3. STATUS_ENDPOINT/<task_id>
+#     task = celery_task_func.AsyncResult(task_id)
 #     from task.state, determine what response should be. Reformat, etc.
 #     return jsonify(response)
-# 3. func:
-#     updates status, sends requests, etc. 
+ 
+
 
 ## Launching celery: 
 # upgrade worker

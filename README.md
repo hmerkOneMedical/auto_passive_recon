@@ -7,7 +7,11 @@ Passive recon script integrating several tools:
 - [shodan](https://www.shodan.io/)
 - google scraping
 
-## Setup
+# Running Passive Recon
+
+## Locally
+
+### Setup
 
 ```
 export SHODAN_API_KEY=xxx # find in shodan portal
@@ -18,8 +22,6 @@ brew install Caskroom/versions/google-chrome-canary
 
 pip install -r requirements.txt
 ```
-
-## Running Passive Recon
 
 Interactively Run in command line:
 
@@ -34,32 +36,37 @@ Launch Flask app:
 python app.py
 ```
 
-Visit 0.0.0.0/3003
+Visit (http://127.0.0.1:5000/)[http://127.0.0.1:5000/]
 
-## Deployed to heroku + scaled up web and worker:
+## Deployed
+
+### Setup
+
+To deploy, ensure you have added backpacks to support selenium / chrome driver.
 
 ```
+heroku login
+heroku create app-name-here
+
+heroku buildpacks:add --index 1 https://github.com/heroku/heroku-buildpack-chromedriver
+heroku buildpacks:add --index 2 https://github.com/heroku/heroku-buildpack-google-chrome
+
+heroku addons:create heroku-redis:hobby-dev --app app-name-here
+
+git add .
+git commit -m "fun message here"
+git push heroku master
+
 heroku ps:scale web=1
 heroku ps:scale worker=1
 ```
 
-### To deploy, ensure you have added backpacks to support selenium / chrome driver.
+### Alternative Options
+
+If you prefer your own redis url, skip the addon step, and configure the REDIS_URL config variable.
 
 ```
-heroku buildpacks:add --index 1 https://github.com/heroku/heroku-buildpack-chromedriver
-heroku buildpacks:add --index 2 https://github.com/heroku/heroku-buildpack-google-chrome
-```
-
-### Set up redis for background processes
-
-```
-heroku addons:create heroku-redis:hobby-dev --app auto-passive-recon
-```
-
-Alternatively, set a different REDIS_URL:
-
-```
-export REDIS_URL=xxx
+heroku config:set REDIS_URL=xxx
 ```
 
 To run redis locally, execute ./run-redis.sh
