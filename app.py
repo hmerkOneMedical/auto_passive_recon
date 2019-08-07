@@ -14,11 +14,9 @@ import time
 import random
 import redis
 
-
 from scripts import *
 from scripts.helpers import *
 from scripts.render_helpers import *
-from scripts.render_helpers_2 import *
 
 from scripts.domain_enumeration import *
 
@@ -30,8 +28,6 @@ redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 
 app.config['CELERY_BROKER_URL'] = redis_url
 app.config['CELERY_RESULT_BACKEND'] = redis_url
-
-print(redis_url)
 
 # Initialize Celery
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])

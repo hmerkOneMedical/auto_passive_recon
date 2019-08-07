@@ -241,21 +241,7 @@ def domain_html(subdomains):
             <hr>'''
 
 def linkedin_details_html(employees, jobs):
-    jobs_blob = ''
-    for result in jobs:
-        jobs_blob += '<tr>'
-        jobs_blob += '<td>'+result['title']+'</td>'
-        jobs_blob += '<td><a target="_blank" href={{'+result['link']+'}}>LinkedIn</a></td>'
-        jobs_blob += '<td>'+result['description']+'</td>'
-        jobs_blob += '</tr>'
-
-    employees_blob = ''
-    for result in employees:
-        employees_blob += '<tr>'
-        employees_blob += '<td>'+result['title']+'</td>'
-        employees_blob += '<td><a target="_blank" href={{'+result['link']+'}}>LinkedIn</a></td>'
-        employees_blob += '<td>'+result['description']+'</td>'
-        employees_blob += '</tr>'
+    inner_html = linkedin_details_inner(employees, jobs)
 
     return '''
         <h3>LinkedIn Details</h3>
@@ -280,7 +266,69 @@ def linkedin_details_html(employees, jobs):
             })
         })
         </script>
-        <a name="targetname"></a>
+        ''' + inner_html
+
+
+def company_details(details):
+    founder_names = ', '.join(details['founders'])
+    online_info = ''
+    for det in details['online']:
+        online_info += '''<a target="_blank" href="'''+ details['online'][det] +'''">'''+ details['online'][det] +'''</a>'''
+        online_info += '<br>'
+
+    return '''
+        <div class="card" style="width: 100%; display: inline-block;">
+            <div class="card-body">
+                <h3 class="card-title">Company Details</h3>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Founded Date:
+                    ''' + details['founded_on'] + '''</li>
+                    <li class="list-group-item">Founders:
+                        ''' + founder_names + '''
+                    </li>
+                    <li class="list-group-item">Private/Public:
+                        ''' + details['company'] + '''</li>
+                    <li class="list-group-item">Number of Employees:
+                        ''' + details['num_employees'] + '''</li>
+                    <li class="list-group-item">Headquarters:
+                        ''' + details['location'] + '''</li>
+                    <li class="list-group-item">Online Presence: <br>
+                        ''' + online_info + '''
+                    </li>
+                </ul>
+            </div>
+        </div>
+        '''
+
+def founder_emails_compro(company_name, founder_emails):
+    return '''
+            <h5 style="display: inline-block; vertical-align:top;">Have
+                founder emails been compromised? Visit <a target="_blank"
+                    href="https://haveibeenpwned.com">HaveIBeenPwned</a> to
+                check ''' + ", ".join(founder_emails) + ''' </h5>'''
+
+
+def domain_details_inner(subdomains):
+    return domain_html(subdomains)
+
+def linkedin_details_inner(employees, jobs):
+    jobs_blob = ''
+    for result in jobs:
+        jobs_blob += '<tr>'
+        jobs_blob += '<td>'+result['title']+'</td>'
+        jobs_blob += '<td><a target="_blank" href={{'+result['link']+'}}>LinkedIn</a></td>'
+        jobs_blob += '<td>'+result['description']+'</td>'
+        jobs_blob += '</tr>'
+
+    employees_blob = ''
+    for result in employees:
+        employees_blob += '<tr>'
+        employees_blob += '<td>'+result['title']+'</td>'
+        employees_blob += '<td><a target="_blank" href={{'+result['link']+'}}>LinkedIn</a></td>'
+        employees_blob += '<td>'+result['description']+'</td>'
+        employees_blob += '</tr>'
+
+    return '''
         <div class="dontprint">
             <div style="width: 49%; display: inline-block; vertical-align:top;">
                 <h3>Hiring</h3>
@@ -303,3 +351,4 @@ def linkedin_details_html(employees, jobs):
                 </table>
             </div>
         </div>'''
+        
