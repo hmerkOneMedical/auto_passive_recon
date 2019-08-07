@@ -102,6 +102,7 @@
       <!-- -->
 
       <h3 style="page-break-before: always">Non-Automated Checks:</h3>
+      <div>
       <div class="founder-emails-compro">
           <h5 style="display: inline-block; width: 50%; vertical-align:top;">
             Have founder emails been compromised?
@@ -116,6 +117,7 @@
           id="toggle_pwned"
         />
       </div>
+        </div>
       <h5 style="display: inline-block; width: 50%; vertical-align:top;">Have
             there been previous security breaches?</h5>
           <div style="display: inline-block; vertical-align:top; right: 40%;">
@@ -137,12 +139,14 @@
     <script>
     $(function() {
         $('#toggle_breach').change(function() {
-        $('#toggle_breach_text').toggle();
+            console.log('TOGGLED??')
+            $('#toggle_breach_text').toggle();
         })
     })
     $(function() {
         $('#toggle_pwned').change(function() {
-        $('#toggle_pwned_text').toggle();
+            console.log('TOGGLED here too?')
+            $('#toggle_pwned_text').toggle();
         })
     })
     </script>

@@ -193,13 +193,13 @@ def async_recon(self, url, company_name):
     self.update_state(state='PROGRESS', meta={'current': 4, 'total': total, 'status': 'Getting subdomains', 'result': growing_inner})
 
 
-    scrape_employees_query = google_scraper.query('site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
+    # scrape_employees_query = google_scraper.query('site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
 
-    scrape_jobs_query = google_scraper.query(
-        'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
+    # scrape_jobs_query = google_scraper.query(
+    #     'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
 
-    #growing_html += linkedin_details_html(scrape_employees_query, scrape_jobs_query)
-    growing_inner['linkedin-details-inner'] = linkedin_details_inner(scrape_employees_query, scrape_jobs_query)
+    # #growing_html += linkedin_details_html(scrape_employees_query, scrape_jobs_query)
+    # growing_inner['linkedin-details-inner'] = linkedin_details_inner(scrape_employees_query, scrape_jobs_query)
 
     self.update_state(state='PROGRESS', meta={'current': 5, 'total': total, 'status': 'Getting subdomains', 'result': growing_inner})
 
@@ -212,7 +212,7 @@ def async_recon(self, url, company_name):
 
     #growing_html += domain_html(domain_results)
     growing_inner['domain-details-inner'] = domain_details_inner(subdomains)
-    
+
     return {'state': 'COMPLETED', 'current': 100, 'total': 100, 'status': 'Task completed!', 'result': growing_inner}
 
 
