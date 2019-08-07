@@ -127,7 +127,7 @@ def non_automated_checks(company_name, founder_emails):
             <h5 style="display: inline-block; width: 50%; vertical-align:top;">Have
                 founder emails been compromised? Visit <a target="_blank"
                     href="https://haveibeenpwned.com">HaveIBeenPwned</a> to
-                check''' + " ,".join(founder_emails) + ''' </h5>
+                check''' + ", ".join(founder_emails) + ''' </h5>
             <div style="display: inline-block; vertical-align:top; right: 40%;">
                 <input
                     type="checkbox"
@@ -136,6 +136,10 @@ def non_automated_checks(company_name, founder_emails):
                     data-off="No"
                     id="toggle_pwned"
                     />
+                    <div id="test-style-addition" class="custom-control custom-switch">
+                    <input type="checkbox" class="custom-control-input" id="customSwitches">
+                    <label class="custom-control-label" for="customSwitches"></label>
+                    </div>
             </div>
             <h5 style="display: inline-block; width: 50%; vertical-align:top;">Have
                 there been previous security breaches?</h5>

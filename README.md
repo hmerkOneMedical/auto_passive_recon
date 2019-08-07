@@ -36,7 +36,7 @@ Launch Flask app:
 python app.py
 ```
 
-Visit (http://127.0.0.1:5000/)[http://127.0.0.1:5000/]
+Visit [127.0.0.1:5000/](http://127.0.0.1:5000/)
 
 ## Deployed
 
