@@ -36,7 +36,7 @@ def founder_emails_compro(company_name, founder_emails):
             <h5 style="display: inline-block; width: 50%; vertical-align:top;">Have
                 founder emails been compromised? Visit <a target="_blank"
                     href="https://haveibeenpwned.com">HaveIBeenPwned</a> to
-                check''' + ", ".join(founder_emails) + ''' </h5>'''
+                check ''' + ", ".join(founder_emails) + ''' </h5>'''
 
 def format_single_table_row(domain, index):
     EXPOSED_IP = os.environ.get('NGROK_EXPOSED_IP', '127.0.0.1:5000')
