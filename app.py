@@ -211,8 +211,8 @@ def async_recon(self, url, company_name):
     domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
 
     #growing_html += domain_html(domain_results)
-    growing_inner['domain-details-inner'] = domain_details_inner(subdomains):
-
+    growing_inner['domain-details-inner'] = domain_details_inner(subdomains)
+    
     return {'state': 'COMPLETED', 'current': 100, 'total': 100, 'status': 'Task completed!', 'result': growing_inner}
 
 
