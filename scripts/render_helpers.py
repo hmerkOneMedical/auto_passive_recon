@@ -175,7 +175,7 @@ def format_single_table_row(domain, index):
     tool_str = ''
     print(domain)
     for tool_type in domain['builtwith']:
-        tool_str += tool_type +': '+ ' ,'.join(domain['builtwith'][tool_type]) + '<br>'
+        tool_str += tool_type +': '+ ', '.join(domain['builtwith'][tool_type]) + '<br>'
 
     vuln_str = ''
     for vuln in domain['vulns']:

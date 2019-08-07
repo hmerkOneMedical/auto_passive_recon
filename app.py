@@ -223,7 +223,7 @@ def report_status(task_id):
             'state': task.state,
             'current': task.info.get('current', 0),
             'total': task.info.get('total', 1),
-            'status': task.info.get('status', '')
+            'status': task.info.get('status', ''),
             'result': task.info.get('result', '')
         }
     elif task.state != 'FAILURE':
