@@ -18,6 +18,7 @@ import redis
 from scripts import *
 from scripts.helpers import *
 from scripts.render_helpers import *
+from scripts.render_helpers_2 import *
 
 from scripts.domain_enumeration import *
 
@@ -166,26 +167,30 @@ def report():
 def async_recon(self, url, company_name):
     """Background task retrieving subdomain information"""
     total = 10
-    growing_html = ''
+    growing_inner = {}
+    #growing_html = ''
     print('celery task under works')
     print(url)
     
-    self.update_state(state='PROGRESS', meta={'url': url, 'current': 1, 'total': total, 'status': 'Getting company basics', 'result': growing_html})
+    self.update_state(state='PROGRESS', meta={'url': url, 'current': 1, 'total': total, 'status': 'Getting company basics', 'result': growing_inner})
 
     details = scrape_crunchbase.run_basics(company_name)
-    growing_html += details_html(details) 
-    self.update_state(state='PROGRESS', meta={'current': 2, 'total': total, 'status': 'Getting summary', 'result': growing_html})
+    #growing_html += details_html(details) 
+    growing_inner['company-details'] = company_details(details)
+    self.update_state(state='PROGRESS', meta={'current': 2, 'total': total, 'status': 'Getting summary', 'result': growing_inner})
     
-    growing_html += report_summary_html()
-    self.update_state(state='PROGRESS', meta={'current': 3, 'total': total, 'status': 'Getting founders', 'result': growing_html})
+    #growing_html += report_summary_html()
+    self.update_state(state='PROGRESS', meta={'current': 3, 'total': total, 'status': 'Getting founders', 'result': growing_inner})
 
     founder_emails = []
     if details:
         for founder in details['founders']:
             founder_emails.append(hunter.get_work_email(url, founder))
 
-    growing_html += non_automated_checks(company_name, founder_emails)
-    self.update_state(state='PROGRESS', meta={'current': 4, 'total': total, 'status': 'Getting subdomains', 'result': growing_html})
+   
+    #growing_html += non_automated_checks(company_name, founder_emails)
+    growing_inner['founder-emails-compro'] = founder_emails_compro(company_name, founder_emails)
+    self.update_state(state='PROGRESS', meta={'current': 4, 'total': total, 'status': 'Getting subdomains', 'result': growing_inner})
 
 
     scrape_employees_query = google_scraper.query('site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
@@ -193,21 +198,22 @@ def async_recon(self, url, company_name):
     scrape_jobs_query = google_scraper.query(
         'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
 
-    growing_html += linkedin_details_html(scrape_employees_query, scrape_jobs_query)
-    self.update_state(state='PROGRESS', meta={'current': 5, 'total': total, 'status': 'Getting subdomains', 'result': growing_html})
+    #growing_html += linkedin_details_html(scrape_employees_query, scrape_jobs_query)
+    growing_inner['linkedin-details-inner'] = linkedin_details_inner(scrape_employees_query, scrape_jobs_query)
 
-    ## MULTITHREADING NOT ALLOWED
-    #subdomains = sublist3r.main(url, None, ports=None, silent=True, verbose=True, engines=None)
+    self.update_state(state='PROGRESS', meta={'current': 5, 'total': total, 'status': 'Getting subdomains', 'result': growing_inner})
+
     subdomains = get_subdomains(url)
     subdomains.append(url)
 
-    self.update_state(state='PROGRESS', meta={'current': 6, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_html})
+    self.update_state(state='PROGRESS', meta={'current': 6, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_inner})
 
     domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
 
-    growing_html += domain_html(domain_results)
-    
-    return {'state': 'COMPLETED', 'current': 100, 'total': 100, 'status': 'Task completed!', 'result': growing_html}
+    #growing_html += domain_html(domain_results)
+    growing_inner['domain-details-inner'] = domain_details_inner(subdomains):
+
+    return {'state': 'COMPLETED', 'current': 100, 'total': 100, 'status': 'Task completed!', 'result': growing_inner}
 
 
 # returns status of recon attempt 
@@ -227,7 +233,7 @@ def report_status(task_id):
             'current': task.info.get('current', 0),
             'total': task.info.get('total', 1),
             'status': task.info.get('status', ''),
-            'result': task.info.get('result', '')
+            'result': task.info.get('result', {})
         }
     elif task.state != 'FAILURE':
         response = {

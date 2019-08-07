@@ -69,8 +69,139 @@
       <div id="progress"></div>
     </div>
     <hr />
+    
+    <!-- Report details -->
+    <div class="card" style="width: 49%; display: inline-block;
+      vertical-align:top;">
+      <div class="card-body">
+        <h3 class="card-title">Report Summary</h3>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item" id="toggle_breach_text"
+            style="display:none;">This company has had security breaches in the
+            past. We estimate the breach was significant as a public release was
+            made.</li>
+          <li class="list-group-item" id="toggle_pwned_text"
+            style="display:none;">The founder's email was associated with other
+            security breaches. This can indicate targetting, poor password
+            rotation, or weak passwords.</li>
+          <li class="list-group-item" id="toggle_staff_text"
+            style="display:none;">There appears to be a lack of security
+            engineers. This can present a significant security risk and can pose
+            challenges in uncovering security breaches or timely remediating
+            exploitable flaws in their environment.</li>
+          <li class="list-group-item" id="toggle_vuln_text"
+            style="display:none;">Our automated testing discovered
+            vulnerabilites. See below for details.</li>
+          {% if domain_results|length > 100 %}
+          <li class="list-group-item" id="toggle_vuln_text"
+            style="display:none;">With {{domain_results|length}} (sub)domains,
+            security risk increases.</li>
+          {% endif %}
+          <li class="list-group-item" id="toggle_vuln_text"
+            style="display:block;">Because of the time boxed nature of the
+            reconnaissance and because only publicly available data sources were
+            used, this report is not meant to be indicative of overall security
+            maturity of the company evaluated. Rather, it is meant to be used
+            solely as a potential indicator that can be considered as one part
+            of the overall diligence process.</li>
+        </ul>
+      </div>
+    </div>
 
-    <div class="data-here"></div>
+    <div class="company-details"></div>
+
+    <div class="non-auto-checks">
+      <hr />
+      <!-- -->
+
+      <h3 style="page-break-before: always">Non-Automated Checks:</h3>
+      <div class="founder-emails-compro">
+          <h5 style="display: inline-block; width: 50%; vertical-align:top;">
+            Have founder emails been compromised?
+        </h5>
+    </div>
+      <div style="display: inline-block; vertical-align:top; right: 40%;">
+        <input
+          type="checkbox"
+          data-toggle="toggle"
+          data-on="Yes"
+          data-off="No"
+          id="toggle_pwned"
+        />
+      </div>
+      <h5 style="display: inline-block; width: 50%; vertical-align:top;">Have
+            there been previous security breaches?</h5>
+          <div style="display: inline-block; vertical-align:top; right: 40%;">
+            <input
+              type="checkbox"
+              data-toggle="toggle"
+              data-on="Yes"
+              data-off="No"
+              id="toggle_breach"
+              />
+          </div>
+          <br>
+          <div class="dontprint">
+            <iframe style="outline:none;width: 500px;height: 500px;"
+              src="https://www.google.com/search?igu=1&ei=&q={{company_name}}+breach"
+              style=></iframe>
+          </div>
+    </div>
+
+    <div class="domain-details">
+      <h3>Domain Details:</h3>
+      <h5 style="display: inline-block; width: 50%; vertical-align:top;">
+        Are there significant vulnerabilities detected in enumerated
+        (sub)domains?
+      </h5>
+      <div style="display: inline-block; vertical-align:top; right: 40%;">
+        <input
+          type="checkbox"
+          data-toggle="toggle"
+          data-on="Yes"
+          data-off="No"
+          id="toggle_vuln"
+        />
+      </div>
+      <script>
+        $(function() {
+          $('#toggle_vuln').change(function() {
+            $('#toggle_vuln_text').toggle();
+          });
+        });
+      </script>
+      <br />
+      <!-- Collapsable Subdomain List: -->
+      <div class="domain-details-inner"></div>
+    </div>
+
+    <div class="linkedin-details">
+      <h3>LinkedIn Details</h3>
+      <h5 style="display: inline-block; width: 50%;">
+        Information available online regarding open positions and current
+        employees, specifically with "Cyber" or "Security" in their title. These
+        may all be false positives. Do the results indicate a concerning/lack of
+        engineers?
+      </h5>
+      <div style="display: inline-block; vertical-align:top; right: 40%;">
+        <input
+          type="checkbox"
+          data-toggle="toggle"
+          data-on="Yes"
+          data-off="No"
+          id="toggle_staff"
+        />
+      </div>
+      <br />
+      <script>
+        $(function() {
+          $('#toggle_staff').change(function() {
+            $('#toggle_staff_text').toggle();
+          });
+        });
+      </script>
+      <div class="linkedin-details-inner">LOADING...</div>
+    </div>
 
     <script>
       function start_long_task() {
@@ -113,12 +244,24 @@
 
           if ('result' in data) {
             $('.data-here').html(data['result']);
-            $('#test-style-addition').addClass('custom-control');
-            $('#test-style-addition').addClass('custom-switch');
-            $('#customSwitches').addClass('custom-control-input');
+
+            if ('company-details' in data['result']) {
+                $('.company-details').html(data['result']['company-details']);
+            }
+
+            if ('founder-emails-compro' in data['result']) {
+                $('.founder-emails-compro').html(data['result']['founder-emails-compro']);
+            }
+
+            if ('domain-details-inner' in data['result']) {
+                $('.domain-details-inner').html(data['result']['domain-details-inner']);
+            }
+
+            if ('linkedin-details-inner' in data['result']) {
+                $('.linkedin-details-inner').html(data['result']['linkedin-details-inner']);
+            }
           }
 
-          console.log(data['state']);
           if (data['state'] == 'COMPLETED' || data['state'] == 'SUCCESS') {
             $('.progress').hide();
             $(status_div.childNodes[3]).text('Result: ' + data['state']);
