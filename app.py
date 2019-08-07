@@ -44,21 +44,24 @@ def index():
 
 @app.route('/frame')
 def frame():
-    url = request.args.get('url')
-    options = webdriver.ChromeOptions()
-    options.add_argument('--ignore-certificate-errors')
-    options.add_argument("--test-type")
-    options.add_argument("--headless")
-    driver = webdriver.Chrome(chrome_options=options)
-    driver.get(url)
+    try:
+        url = request.args.get('url')
+        options = webdriver.ChromeOptions()
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument("--test-type")
+        options.add_argument("--headless")
+        driver = webdriver.Chrome(chrome_options=options)
+        driver.get(url)
 
-    screenshot = driver.get_screenshot_as_png()
-    image_64_encoded = base64.encodestring(screenshot)
-    decodedScreenie = "data:image/png;base64,%s" % image_64_encoded.decode("utf8")
+        screenshot = driver.get_screenshot_as_png()
+        image_64_encoded = base64.encodestring(screenshot)
+        decodedScreenie = "data:image/png;base64,%s" % image_64_encoded.decode("utf8")
 
-    driver.close()
+        driver.close()
 
-    return '<div style="max-width: 100%; height: auto"><img style="max-width: 100%; height: auto" src="'+decodedScreenie+'"/></div>'
+        return '<div style="max-width: 100%; height: auto"><img style="max-width: 100%; height: auto" src="'+decodedScreenie+'"/></div>'
+    except:
+        return '<div style="max-width: 100%; height: auto"><h3>Something went wrong with headless chrome driver.</h3></div>'
 
 ## Statically renders report template ==> works only on localhost.
 @app.route('/recon', methods=['POST'])

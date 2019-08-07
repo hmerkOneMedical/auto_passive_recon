@@ -74,13 +74,15 @@ def add_domain_details(subdomains):
                 vulns = []
             
             builtwith_results = get_technical_details(key)
-            addition = {'url': key, 'ips': domainDict[key], 'vulns': vulns, 'ports': ports, 'builtwith': builtwith_results}
+            addition = {'url': key, 'ips': domainDict[key], 'vulns': vulns, 'ports': remove_dups(ports), 'builtwith': builtwith_results}
             ipResults.append(addition)
             print(addition)
 
     print('RETURNING VALUES HERE')
     return ipResults
 
+def remove_dups(duped):
+    return list(dict.fromkeys(duped))
 
 def find_ip_vulnerabilities(ip):
     try:
