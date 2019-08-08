@@ -221,6 +221,9 @@ def async_recon(self, url, company_name):
 
     subdomains = getSubdomains(url, None, ports=None, silent=True, verbose=True, engines=None)
 
+    print("======================")
+    print(subdomains)
+
     self.update_state(state='PROGRESS', meta={'current': 6, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_inner})
 
     domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)

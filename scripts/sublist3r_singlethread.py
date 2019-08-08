@@ -1336,14 +1336,18 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
     else:
         engines = engines.split(',')
         for engine in engines:
+            print(engine)
             if engine.lower() in supported_engines:
                 chosenEnums.append(supported_engines[engine.lower()])
 
     # Start the engines enumeration
     enums = [enum(domain, [], q=subdomains_queue, silent=silent, verbose=verbose) for enum in chosenEnums]
     for enum in enums:
+        print('running ...')
         enum.run()
     for enum in enums:
+        print('extending:')
+        print(enum.subdomains)
         subdomains_queue.extend(enum.subdomains)
 
     subdomains = set(subdomains_queue)
@@ -1369,6 +1373,8 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
         elif not silent:
             for subdomain in subdomains:
                 print(G + subdomain + W)
+
+    print(subdomains)
     return subdomains
 
 
