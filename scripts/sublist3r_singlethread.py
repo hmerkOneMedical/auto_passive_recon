@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
-# Sublist3r_singlethread v1.0
+# sublist3r_singlethread v1.0
 # By Helena Merk - github.com/helenamerk.dev
 
 # modules in standard library
