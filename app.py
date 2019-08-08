@@ -131,7 +131,7 @@ def report():
 
         ## REPLACE this with async request !
         #subdomains = get_subdomains(company_url)
-        subdomains = sublist3r.main(company_url, None, ports=None, silent=True, verbose=True, engines=None)
+        subdomains = sublist3r_singlethread.main(company_url, None, ports=None, silent=True, verbose=True, engines=None)
  
         yield '<br>'
         domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
@@ -165,6 +165,9 @@ def report():
 # upgrade worker
 # launch redis db.
 
+def get_subdomains_by_request(req):
+    url = base_url + '/'
+    requests.get()
 
 ## Actual task that finds content
 @celery.task(bind=True)
@@ -212,8 +215,10 @@ def async_recon(self, url, company_name):
 
     self.update_state(state='PROGRESS', meta={'current': 5, 'total': total, 'status': 'Getting subdomains', 'result': growing_inner})
 
-    subdomains = get_subdomains(url)
-    subdomains.append(url)
+    #subdomains = get_subdomains(url)
+    #subdomains.append(url)
+
+    subdomains = sublist3r_singlethread.main(company_url, None, ports=None, silent=True, verbose=True, engines=None)
 
     self.update_state(state='PROGRESS', meta={'current': 6, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_inner})
 
