@@ -71,10 +71,11 @@ def recon():
     current_ip = os.environ.get('HOSTED_IP', '127.0.0.1:5000')
 
     local = False
+    print(current_ip)
     if current_ip == '127.0.0.1:5000':
         local = True
     else:
-        return flask.redirect(url_for('async_recon_report'), code=307)
+        return redirect(url_for('async_recon_report'), code=307)
 
     response = run_recon(company_url, company_name, None, False, local)
     details = response['details']
@@ -104,9 +105,14 @@ def report():
     company_name = (request.form['company_name']).lower()
 
     ## cannot at the moment run sublist3r when hosted. :(
-    if current_ip != '127.0.0.1:5000':
-        return 'Incorrect endpoint hit'
-        #return redirect(url_for('async_recon_report'), code=307))
+    # if current_ip != '127.0.0.1:5000':
+    #     return 'Incorrect endpoint hit'
+    #     #return redirect(url_for('async_recon_report'), code=307))
+
+    if current_ip == '127.0.0.1:5000':
+        local = True
+    else:
+        return redirect(url_for('async_recon_report'), code=307)
 
     def generate():
         yield report_header_html(company_name)

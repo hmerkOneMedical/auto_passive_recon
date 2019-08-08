@@ -988,9 +988,13 @@ class DNSdumpster():
             'Accept-Encoding': 'gzip',
         }
 
+        print('INITIATED')
+
         return
 
     def get_response(self, response):
+        print('GOT RESPONSE.')
+
         if response is None:
             return 0
         return response.text if hasattr(response, "text") else response.content
@@ -1014,6 +1018,7 @@ class DNSdumpster():
                 is_valid = True
                 self.live_subdomains.append(host)
         except:
+            print('ERRORERED HERE')
             pass
         #self.lock.release()
         return is_valid
@@ -1022,11 +1027,17 @@ class DNSdumpster():
         params = params or {}
         headers = dict(self.headers)
         headers['Referer'] = 'https://dnsdumpster.com'
+
+        print('HERE')
         try:
             if req_method == 'GET':
                 resp = self.session.get(url, headers=headers, timeout=self.timeout)
+                print('get resp:')
+                print(resp)
             else:
                 resp = self.session.post(url, data=params, headers=headers, timeout=self.timeout)
+                print('post resp')
+                print(resp)
         except Exception as e:
             print(e)
             #print(e)
@@ -1043,27 +1054,36 @@ class DNSdumpster():
         token = self.get_csrftoken(resp)
         params = {'csrfmiddlewaretoken': token, 'targetip': self.domain}
         post_resp = self.req('POST', self.base_url, params)
+
+        print('in enumeration func')
+        print(post_resp)
+
         self.extract_domains(post_resp)
         for subdomain in self.subdomains:
             print(subdomain)
             #t = threading.Thread(target=self.check_host, args=(subdomain,))
             #t.start()
             #t.join()
-        return self.live_subdomains
+        return self.subdomains
 
     def extract_domains(self, resp):
+        print('extracting value func could be broken')
+
         tbl_regex = re.compile('<a name="hostanchor"><\/a>Host Records.*?<table.*?>(.*?)</table>', re.S)
         link_regex = re.compile('<td class="col-md-4">(.*?)<br>', re.S)
         links = []
         try:
             results_tbl = tbl_regex.findall(resp)[0]
+            print(results_tbl)
         except IndexError:
             results_tbl = ''
         links_list = link_regex.findall(results_tbl)
         links = list(set(links_list))
         for link in links:
+            print('pls')
             subdomain = link.strip()
             if not subdomain.endswith(self.domain):
+                print('maybe>')
                 continue
             if subdomain and subdomain not in self.subdomains and subdomain != self.domain:
                 self.subdomains.append(subdomain.strip())
@@ -1324,7 +1344,7 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
                         # 'passivedns': PassiveDNS
                          }
     
-    engines = 'baidu,yahoo,bing,dnsdumpster,netcraft,threatcrowd'
+    engines = 'dnsdumpster'#'baidu,yahoo,bing,dnsdumpster,netcraft,threatcrowd'
     chosenEnums = []
 
     if engines is None:
