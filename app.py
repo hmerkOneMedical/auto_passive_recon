@@ -19,8 +19,9 @@ import redis
 from scripts import *
 from scripts.helpers import *
 from scripts.render_helpers import *
+from scripts.render_helpers import *
 
-from scripts.domain_enumeration import *
+from scripts.sublist3r_singlethread import getSubdomains
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
@@ -131,7 +132,7 @@ def report():
 
         ## REPLACE this with async request !
         #subdomains = get_subdomains(company_url)
-        subdomains = sublist3r_singlethread.main(company_url, None, ports=None, silent=True, verbose=True, engines=None)
+        subdomains = getSubdomains(company_url, None, ports=None, silent=True, verbose=True, engines=None)
  
         yield '<br>'
         domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
@@ -218,7 +219,7 @@ def async_recon(self, url, company_name):
     #subdomains = get_subdomains(url)
     #subdomains.append(url)
 
-    subdomains = sublist3r_singlethread.main(company_url, None, ports=None, silent=True, verbose=True, engines=None)
+    subdomains = getSubdomains(url, None, ports=None, silent=True, verbose=True, engines=None)
 
     self.update_state(state='PROGRESS', meta={'current': 6, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_inner})
 

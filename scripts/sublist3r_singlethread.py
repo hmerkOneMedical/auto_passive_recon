@@ -1287,7 +1287,7 @@ class ThreatCrowd():
 #             t.start()
 
 
-def main(domain, savefile, ports, silent, verbose, engines):
+def getSubdomains(domain, savefile, ports, silent, verbose, engines):
     search_list = set()
 
     subdomains_queue = list()
@@ -1317,10 +1317,10 @@ def main(domain, savefile, ports, silent, verbose, engines):
                          'ask': AskEnum,
                          'netcraft': NetcraftEnum,
                          'dnsdumpster': DNSdumpster,
-                         'virustotal': Virustotal,
+                        # 'virustotal': Virustotal,
                          'threatcrowd': ThreatCrowd,
-                         'ssl': CrtSearch,
-                         'passivedns': PassiveDNS
+                        # 'ssl': CrtSearch,
+                        # 'passivedns': PassiveDNS
                          }
     
     engines = 'baidu,yahoo,bing,dnsdumpster,netcraft,threatcrowd'
@@ -1380,7 +1380,7 @@ def interactive():
     if verbose or verbose is None:
         verbose = True
     banner()
-    res = main(domain, savefile, ports, silent=False, verbose=verbose, engines=engines)
+    res = getSubdomains(domain, savefile, ports, silent=False, verbose=verbose, engines=engines)
 
 if __name__ == "__main__":
     interactive()
