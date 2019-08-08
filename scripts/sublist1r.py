@@ -462,6 +462,7 @@ class BaiduEnum(enumratorBase):
         self.engine_name = "Baidu"
         self.MAX_DOMAINS = 2
         self.MAX_PAGES = 760
+        self.querydomain = domain
 
         enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
 
