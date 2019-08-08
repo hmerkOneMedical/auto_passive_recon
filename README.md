@@ -74,5 +74,3 @@ If you prefer your own redis url, skip the addon step, and configure the REDIS_U
 ```
 heroku config:set REDIS_URL=xxx
 ```
-
-To run redis locally, execute ./run-redis.sh

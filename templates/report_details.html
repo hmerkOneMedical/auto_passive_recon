@@ -72,10 +72,7 @@
             {% endfor %}
           </li>
           <li class="list-group-item">Domain Details:
-            {% for prop in whois_result %}
-            {{prop}}: {{whois_result[prop]}}
-            <br>
-            {% endfor %}
+            {{whois_result}}
           </li>
         </ul>
       </div>

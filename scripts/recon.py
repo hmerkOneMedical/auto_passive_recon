@@ -36,10 +36,9 @@ def run_recon(company_url, company_name, subdomain_out_file, interactive, run_su
     print(company_url)
     company_url = str(company_url)
     try:
-        whois_result = whois.query(company_url)
-        whois_result = json.loads(whois_result.encode('utf-8'))
+        whois_result = whois.whois(company_url)
     except:
-        whois_result = {'data': []}
+        whois_result = ''
 
     scrape_employees_query = google_scraper.query(
         'site:www.linkedin.com/in \'' + company_name + '\' security cyber', 10)
@@ -107,7 +106,7 @@ def run_recon(company_url, company_name, subdomain_out_file, interactive, run_su
         'jobs': scrape_jobs_query,
         'details': details,
         'founder_emails': founder_emails,
-        'whois_result': whois_result['data'],
+        'whois_result': whois_result,
     }
 
     if not interactive:

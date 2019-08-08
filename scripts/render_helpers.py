@@ -1,4 +1,5 @@
 import os
+import whois
 
 def report_header_html(company_name):
     return '''
@@ -83,6 +84,9 @@ def details_html(details):
                         ''' + details['location'] + '''</li>
                     <li class="list-group-item">Online Presence: <br>
                         ''' + online_info + '''
+                    </li>
+                    <li class="list-group-item">Domain Details:
+                        ''' + details['whois_details'] + '''
                     </li>
                 </ul>
             </div>

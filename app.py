@@ -1,6 +1,8 @@
+## TODO: test addition of whois
+
 __author__ = 'helena merk'
 
-from flask import Flask, render_template, request, Response, jsonify, url_for
+from flask import Flask, render_template, request, Response, jsonify, url_for, redirect
 from celery import Celery
 
 import json
@@ -106,6 +108,8 @@ def report():
         yield report_header_html(company_name)
 
         details = scrape_crunchbase.run_basics(company_name)
+        whois_details = whois.whois(company_url)
+        details['whois_details'] = whois_details
         
         yield details_html(details) 
         yield report_summary_html()
@@ -175,6 +179,9 @@ def async_recon(self, url, company_name):
 
     details = scrape_crunchbase.run_basics(company_name)
     #growing_html += details_html(details) 
+    whois_details = whois.whois(url)
+    details['whois_details'] = whois_details
+
     growing_inner['company-details'] = company_details(details)
     self.update_state(state='PROGRESS', meta={'current': 2, 'total': total, 'status': 'Getting summary', 'result': growing_inner})
     
