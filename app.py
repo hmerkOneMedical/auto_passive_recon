@@ -21,7 +21,7 @@ from scripts.helpers import *
 from scripts.render_helpers import *
 from scripts.render_helpers import *
 
-from scripts.sublist3r_singlethread import getSubdomains
+from scripts.sublist1r import getSubdomains
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'

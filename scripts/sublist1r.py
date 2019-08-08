@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
-# sublist3r_singlethread v1.0
-# By Helena Merk - github.com/helenamerk.dev
+# sublist1r v1.0
+# By Helena Merk - github.com/helenamerk - https://helenamerk.dev
 
 # modules in standard library
 import re
@@ -11,8 +11,6 @@ import argparse
 import time
 import hashlib
 import random
-# import multiprocessing
-# import threading
 import socket
 import json
 from collections import Counter
@@ -131,7 +129,7 @@ def subdomain_sorting_key(hostname):
 
 
 class enumratorBase(object):
-    def __init__(self, base_url, engine_name, domain, subdomains=None, silent=False, verbose=True):
+    def __init__(self, base_url, engine_name, domain, subdomains=None, q=None, silent=False, verbose=True):
         subdomains = subdomains or []
         self.domain = urlparse.urlparse(domain).netloc
         self.session = requests.Session()
@@ -147,7 +145,14 @@ class enumratorBase(object):
               'Accept-Language': 'en-US,en;q=0.8',
               'Accept-Encoding': 'gzip',
           }
-        printbanner()
+        self.q = q
+
+        self.print_banner()
+
+    def run(self):
+        domain_list = self.enumerate()
+        for domain in domain_list:
+            self.q.append(domain)
 
     def print_(self, text):
         if not self.silent:
@@ -261,27 +266,16 @@ class enumratorBase(object):
 #             self.q.append(domain)
 
 ## has not returned anything ..
-class GoogleEnum():
+class GoogleEnum(enumratorBase):
     def __init__(self, domain, subdomains=None, q=None, silent=False, verbose=True):
         self.base_url = "https://google.com/search?q={query}&btnG=Search&hl=en-US&biw=&bih=&gbv=1&start={page_no}&filter=0"
         self.engine_name = "Google"
-
-        self.domain = urlparse.urlparse(domain).netloc
-        self.subdomains = subdomains or []
         self.live_subdomains = []
-        self.timeout = 25
-        self.session = requests.Session()
-        self.q = q
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.8',
-            'Accept-Encoding': 'gzip',
-        }
+        
+        enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
 
         self.MAX_DOMAINS = 11
         self.MAX_PAGES = 200
-        # super(GoogleEnum, self).__init__(base_url, self.engine_name, domain, subdomains, q=q, silent=silent, verbose=verbose)
         return
 
     def extract_domains(self, resp):
@@ -296,10 +290,6 @@ class GoogleEnum():
                 subdomain = urlparse.urlparse(link).netloc
 
                 self.subdomains.append(subdomain.strip())
-                # if subdomain and subdomain not in self.subdomains and subdomain != self.domain:
-                #     if self.verbose:
-                #         print("%s%s: %s%s" % (R, self.engine_name, W, subdomain))
-                #     self.subdomains.append(subdomain.strip())
         except Exception:
             pass
         return links_list
@@ -325,106 +315,19 @@ class GoogleEnum():
         return query
 
 ## good egg
-class YahooEnum():
+class YahooEnum(enumratorBase):
     def __init__(self, domain, subdomains=None, q=None, silent=False, verbose=True):
         self.base_url = "https://search.yahoo.com/search?p={query}&b={page_no}"
         self.engine_name = "Yahoo"
         self.MAX_DOMAINS = 10
         self.MAX_PAGES = 0
         
-        self.domain = urlparse.urlparse(domain).netloc
-        self.subdomains = subdomains or []
         self.live_subdomains = []
         self.timeout = 25
-        self.session = requests.Session()
-        self.q = q
-        self.verbose = verbose
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.8',
-            'Accept-Encoding': 'gzip',
-        }
+
+        enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
 
         return
-
-        # override
-    def check_response_errors(self, resp):
-        """ chlid class should override this function
-        The function should return True if there are no errors and False otherwise
-        """
-        return True
-    
-    def get_response(self, response):
-        if response is None:
-            return 0
-
-        return response.text if hasattr(response, "text") else response.content
-
-    def send_req(self, query, page_no=1):
-        url = self.base_url.format(query=query, page_no=page_no)
-        try:
-            resp = self.session.get(url, headers=self.headers, timeout=self.timeout)
-        except Exception:
-            resp = None
-        return self.get_response(resp)
-
-    def run(self):
-        domain_list = self.enumerate()
-        for domain in domain_list:
-            self.q.append(domain)
-            
-
-    def check_max_pages(self, num):
-        if self.MAX_PAGES == 0:
-            return False
-        return num >= self.MAX_PAGES
-
-    def check_max_subdomains(self, count):
-        if self.MAX_DOMAINS == 0:
-            return False
-        return count >= self.MAX_DOMAINS
-     
-    def enumerate(self, altquery=False):
-        flag = True
-        page_no = 0
-        prev_links = []
-        retries = 0
-
-        while flag:
-            query = self.generate_query()
-            count = query.count(self.domain)  # finding the number of subdomains found so far
-
-            # if they we reached the maximum number of subdomains in search query
-            # then we should go over the pages
-            if self.check_max_subdomains(count):
-                page_no = self.get_page(page_no)
-
-            if self.check_max_pages(page_no):  # maximum pages for Google to avoid getting blocked
-                return self.subdomains
-            resp = self.send_req(query, page_no)
-
-            # check if there is any error occured
-            if not self.check_response_errors(resp):
-                return self.subdomains
-            links = self.extract_domains(resp)
-
-
-            # if the previous page hyperlinks was the similar to the current one, then maybe we have reached the last page
-            if links == prev_links:
-                retries += 1
-                page_no = self.get_page(page_no)
-
-        # make another retry maybe it isn't the last page
-                if retries >= 3:
-                    return self.subdomains
-            prev_links = links
-            #self.should_sleep()
-
-        print(self.subdomains)
-
-        return self.subdomains
-    ## till here
 
     def extract_domains(self, resp):
         link_regx2 = re.compile('<span class=" fz-.*? fw-m fc-12th wr-bw.*?">(.*?)</span>')
@@ -445,13 +348,6 @@ class YahooEnum():
                 if self.verbose:
                     print("%s%s: %s%s" % (R, self.engine_name, W, subdomain))
 
-                # if not subdomain.endswith(self.domain):
-                #     continue
-                # if subdomain and subdomain not in self.subdomains and subdomain != self.domain:
-                #     if self.verbose:
-                #         print("%s%s: %s%s" % (R, self.engine_name, W, subdomain))
-
-                #     self.subdomains.append(subdomain.strip())
         except Exception:
             pass
 
@@ -459,9 +355,6 @@ class YahooEnum():
 
     def should_sleep(self):
         return
-
-    def get_page(self, num):
-        return num + 10
 
     def generate_query(self):
         if self.subdomains:
@@ -473,103 +366,19 @@ class YahooEnum():
         return query
 
 ## nothing returns
-class AskEnum():
+class AskEnum(enumratorBase):
     def __init__(self, domain, subdomains=None, q=None, silent=False, verbose=True):
         self.base_url = 'http://www.ask.com/web?q={query}&page={page_no}&qid=8D6EE6BF52E0C04527E51F64F22C4534&o=0&l=dir&qsrc=998&qo=pagination'
         self.engine_name = "Ask"
         self.MAX_DOMAINS = 11
         self.MAX_PAGES = 0
         
-        self.domain = urlparse.urlparse(domain).netloc
-        self.subdomains = subdomains or []
         self.live_subdomains = []
         self.timeout = 25
-        self.session = requests.Session()
-        self.q = q
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.8',
-            'Accept-Encoding': 'gzip',
-        }
-
+        
+        enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
         return
-
-    def check_response_errors(self, resp):
-        """ chlid class should override this function
-        The function should return True if there are no errors and False otherwise
-        """
-        return True
     
-    def get_response(self, response):
-        if response is None:
-            return 0
-
-        return response.text if hasattr(response, "text") else response.content
-
-    def send_req(self, query, page_no=1):
-        url = self.base_url.format(query=query, page_no=page_no)
-        try:
-            resp = self.session.get(url, headers=self.headers, timeout=self.timeout)
-        except Exception:
-            resp = None
-        return self.get_response(resp)
-
-    def run(self):
-        domain_list = self.enumerate()
-        for domain in domain_list:
-            self.q.append(domain)
-
-    def check_max_pages(self, num):
-        if self.MAX_PAGES == 0:
-            return False
-        return num >= self.MAX_PAGES
-
-    def check_max_subdomains(self, count):
-        if self.MAX_DOMAINS == 0:
-            return False
-        return count >= self.MAX_DOMAINS
-     
-    def enumerate(self, altquery=False):
-        flag = True
-        page_no = 0
-        prev_links = []
-        retries = 0
-
-        while flag:
-            query = self.generate_query()
-            count = query.count(self.domain)  # finding the number of subdomains found so far
-
-            # if they we reached the maximum number of subdomains in search query
-            # then we should go over the pages
-            if self.check_max_subdomains(count):
-                page_no = self.get_page(page_no)
-
-            if self.check_max_pages(page_no):  # maximum pages for Google to avoid getting blocked
-                return self.subdomains
-            resp = self.send_req(query, page_no)
-
-            # check if there is any error occured
-            if not self.check_response_errors(resp):
-                return self.subdomains
-            links = self.extract_domains(resp)
-
-
-            # if the previous page hyperlinks was the similar to the current one, then maybe we have reached the last page
-            if links == prev_links:
-                retries += 1
-                page_no = self.get_page(page_no)
-
-        # make another retry maybe it isn't the last page
-                if retries >= 3:
-                    return self.subdomains
-            prev_links = links
-            #self.should_sleep()
-
-        print(self.subdomains)
-
-        return self.subdomains
-
     def extract_domains(self, resp):
         links_list = list()
         link_regx = re.compile('<p class="web-result-url">(.*?)</p>')
@@ -602,108 +411,16 @@ class AskEnum():
         return query
 
 ## good egg
-class BingEnum():
+class BingEnum(enumratorBase):
     def __init__(self, domain, subdomains=None, q=None, silent=False, verbose=True):
         self.base_url = 'https://www.bing.com/search?q={query}&go=Submit&first={page_no}'
         self.engine_name = "Bing"
         self.MAX_DOMAINS = 30
         self.MAX_PAGES = 0
-        
-        self.domain = urlparse.urlparse(domain).netloc
-        self.subdomains = subdomains or []
         self.live_subdomains = []
-        self.timeout = 25
-        self.session = requests.Session()
-        self.q = q
-        self.verbose = verbose
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.8',
-            'Accept-Encoding': 'gzip',
-        }
+        
+        enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
         return
-
-        # override
-    def check_response_errors(self, resp):
-        """ chlid class should override this function
-        The function should return True if there are no errors and False otherwise
-        """
-        return True
-    
-    def get_response(self, response):
-        if response is None:
-            return 0
-
-        return response.text if hasattr(response, "text") else response.content
-
-    def send_req(self, query, page_no=1):
-        url = self.base_url.format(query=query, page_no=page_no)
-        try:
-            resp = self.session.get(url, headers=self.headers, timeout=self.timeout)
-        except Exception:
-            resp = None
-        return self.get_response(resp)
-
-    def run(self):
-        domain_list = self.enumerate()
-        for domain in domain_list:
-            self.q.append(domain)
-
-    def check_max_pages(self, num):
-        if self.MAX_PAGES == 0:
-            return False
-        return num >= self.MAX_PAGES
-
-    def check_max_subdomains(self, count):
-        if self.MAX_DOMAINS == 0:
-            return False
-        return count >= self.MAX_DOMAINS
-    
-    def get_page(self, num):
-        """ chlid class that user different pagnation counter should override this function """
-        return num + 10
-
-    def enumerate(self, altquery=False):
-        flag = True
-        page_no = 0
-        prev_links = []
-        retries = 0
-
-        while flag:
-            query = self.generate_query()
-            count = query.count(self.domain)  # finding the number of subdomains found so far
-
-            # if they we reached the maximum number of subdomains in search query
-            # then we should go over the pages
-            if self.check_max_subdomains(count):
-                page_no = self.get_page(page_no)
-
-            if self.check_max_pages(page_no):  # maximum pages for Google to avoid getting blocked
-                return self.subdomains
-            resp = self.send_req(query, page_no)
-
-            # check if there is any error occured
-            if not self.check_response_errors(resp):
-                return self.subdomains
-            links = self.extract_domains(resp)
-
-
-            # if the previous page hyperlinks was the similar to the current one, then maybe we have reached the last page
-            if links == prev_links:
-                retries += 1
-                page_no = self.get_page(page_no)
-
-        # make another retry maybe it isn't the last page
-                if retries >= 3:
-                    return self.subdomains
-            prev_links = links
-            #self.should_sleep()
-
-        print(self.subdomains)
-
-        return self.subdomains
-    ## till here
 
     def extract_domains(self, resp):
         links_list = list()
@@ -738,7 +455,7 @@ class BingEnum():
         return query
 
 ## good egg
-class BaiduEnum():
+class BaiduEnum(enumratorBase):
     def __init__(self, domain, subdomains=None, q=None, silent=False, verbose=True):
         subdomains = subdomains or []
         self.base_url = 'https://www.baidu.com/s?pn={page_no}&wd={query}&oq={query}'
@@ -746,93 +463,9 @@ class BaiduEnum():
         self.MAX_DOMAINS = 2
         self.MAX_PAGES = 760
 
-        self.domain = urlparse.urlparse(domain).netloc
-        self.querydomain = self.domain
-        self.subdomains = subdomains or []
-        self.live_subdomains = []
-        self.timeout = 25
-        self.session = requests.Session()
-        self.q = q
-        self.verbose = verbose
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.8',
-            'Accept-Encoding': 'gzip',
-        }
+        enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
+
         return
-
-    
-    def run(self):
-        domain_list = self.enumerate()
-        for domain in domain_list:
-            self.q.append(domain)
-
-    def check_max_subdomains(self, count):
-        if self.MAX_DOMAINS == 0:
-            return False
-        return count >= self.MAX_DOMAINS
-
-
-    def check_max_pages(self, num):
-        if self.MAX_PAGES == 0:
-            return False
-        return num >= self.MAX_PAGES
-
-    def get_response(self, response):
-        if response is None:
-            return 0
-        return response.text if hasattr(response, "text") else response.content
-
-    def send_req(self, query, page_no=1):
-        url = self.base_url.format(query=query, page_no=page_no)
-        try:
-            resp = self.session.get(url, headers=self.headers, timeout=self.timeout)
-        except Exception:
-            resp = None
-        return self.get_response(resp)
-
-
-    def get_page(self, num):
-        """ chlid class that user different pagnation counter should override this function """
-        return num + 10
-
-    def enumerate(self, altquery=False):
-        flag = True
-        page_no = 0
-        prev_links = []
-        retries = 0
-
-        while flag:
-            query = self.generate_query()
-            count = query.count(self.domain)  # finding the number of subdomains found so far
-
-            # if they we reached the maximum number of subdomains in search query
-            # then we should go over the pages
-            if self.check_max_subdomains(count):
-                page_no = self.get_page(page_no)
-
-            if self.check_max_pages(page_no):  # maximum pages for Google to avoid getting blocked
-                return self.subdomains
-            resp = self.send_req(query, page_no)
-
-            # check if there is any error occured
-            if not self.check_response_errors(resp):
-                return self.subdomains
-            links = self.extract_domains(resp)
-
-            # if the previous page hyperlinks was the similar to the current one, then maybe we have reached the last page
-            if links == prev_links:
-                retries += 1
-                page_no = self.get_page(page_no)
-
-        # make another retry maybe it isn't the last page
-                if retries >= 3:
-                    return self.subdomains
-
-            prev_links = links
-
-        return self.subdomains
 
     def extract_domains(self, resp):
         links = list()
@@ -882,37 +515,14 @@ class BaiduEnum():
         return query
 
 ## good egg
-class NetcraftEnum():
+class NetcraftEnum(enumratorBase):
     def __init__(self, domain, subdomains=None, q=None, silent=False, verbose=True):
         self.base_url = 'https://searchdns.netcraft.com/?restriction=site+ends+with&host={domain}'
         self.engine_name = "Netcraft"
         
-        self.domain = urlparse.urlparse(domain).netloc
-        self.subdomains = subdomains or []
-        self.live_subdomains = []
-        self.timeout = 25
-        self.session = requests.Session()
-        self.q = q
-        self.verbose = verbose
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.8',
-            'Accept-Encoding': 'gzip',
-        }
+        enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
 
         return
-
-    def run(self):
-        domain_list = self.enumerate()
-        for domain in domain_list:
-            self.q.append(domain)
-
-    def get_response(self, response):
-        if response is None:
-            return 0
-
-        return response.text if hasattr(response, "text") else response.content
 
     def req(self, url, cookies=None):
         cookies = cookies or {}
@@ -977,36 +587,17 @@ class NetcraftEnum():
         return links_list
 
 ## good egg
-class DNSdumpster():
+class DNSdumpster(enumratorBase):
     def __init__(self, domain, subdomains=None, q=None, silent=False, verbose=True):
         self.base_url = 'https://dnsdumpster.com/'
         self.engine_name = "DNSdumpster"
-
-        self.domain = urlparse.urlparse(domain).netloc
-        self.subdomains = subdomains or []
         self.live_subdomains = []
         self.timeout = 25
-        self.session = requests.Session()
-        self.q = q
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.8',
-            'Accept-Encoding': 'gzip',
-        }
+        
+        enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
+
 
         return
-
-    def get_response(self, response):
-
-        if response is None:
-            return 0
-        return response.text if hasattr(response, "text") else response.content
-
-    def run(self):
-        domain_list = self.enumerate()
-        for domain in domain_list:
-            self.q.append(domain)
 
     def check_host(self, host):
         is_valid = False
@@ -1035,15 +626,10 @@ class DNSdumpster():
         try:
             if req_method == 'GET':
                 resp = self.session.get(url, headers=headers, timeout=self.timeout)
-                print('get resp:')
-                print(resp)
             else:
                 resp = self.session.post(url, data=params, headers=headers, timeout=self.timeout)
-                print('post resp')
-                print(resp)
         except Exception as e:
             print(e)
-            #print(e)
             resp = None
         return self.get_response(resp)
 
@@ -1133,37 +719,15 @@ class DNSdumpster():
 #             pass
 
 ## good egg
-class ThreatCrowd():
+class ThreatCrowd(enumratorBase):
     def __init__(self, domain, subdomains=None, q=None, silent=False, verbose=True):
         self.base_url = 'https://www.threatcrowd.org/searchApi/v2/domain/report/?domain={domain}'
         self.engine_name = "ThreatCrowd"
         
-        self.domain = urlparse.urlparse(domain).netloc
-        self.subdomains = subdomains or []
-        self.live_subdomains = []
-        self.timeout = 25
-        self.session = requests.Session()
-        self.q = q
-        self.verbose = verbose
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.8',
-            'Accept-Encoding': 'gzip',
-        }
+        enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
 
         return
 
-    def run(self):
-        domain_list = self.enumerate()
-        for domain in domain_list:
-            self.q.append(domain)
-    
-    def get_response(self, response):
-        if response is None:
-            return 0
-
-        return response.text if hasattr(response, "text") else response.content
 
     def req(self, url):
         try:
@@ -1332,6 +896,7 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
     if verbose and not silent:
         print(Y + "[-] verbosity is enabled, will show the subdomains results in realtime" + W)
 
+    ## TODO: implement CrtSearch, PassiveDNS, VirusTotal
     supported_engines = {'baidu': BaiduEnum,
                          'yahoo': YahooEnum,
                          'google': GoogleEnum,
@@ -1345,28 +910,29 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
                         # 'passivedns': PassiveDNS
                          }
     
-    engines = 'baidu,yahoo,bing,dnsdumpster,netcraft,threatcrowd'
     chosenEnums = []
 
     if engines is None:
+        ## TODO: implement CrtSearch, PassiveDNS, VirusTotal
+        # chosenEnums = [ 
+        #     BaiduEnum, YahooEnum, GoogleEnum, BingEnum, AskEnum,
+        #     NetcraftEnum, DNSdumpster, Virustotal, ThreatCrowd,
+        #     CrtSearch, PassiveDNS
+        # ]
         chosenEnums = [
             BaiduEnum, YahooEnum, GoogleEnum, BingEnum, AskEnum,
-            NetcraftEnum, DNSdumpster, Virustotal, ThreatCrowd,
-            CrtSearch, PassiveDNS
+            NetcraftEnum, DNSdumpster, ThreatCrowd
         ]
     else:
         engines = engines.split(',')
         for engine in engines:
-            print(engine)
             if engine.lower() in supported_engines:
                 chosenEnums.append(supported_engines[engine.lower()])
 
     # Start the engines enumeration
     enums = [enum(domain, [], q=subdomains_queue, silent=silent, verbose=verbose) for enum in chosenEnums]
     for enum in enums:
-        print('running ...')
         enum.run()
-        print(enum.subdomains)
         subdomains_queue.extend(enum.subdomains)
 
     subdomains = set(subdomains_queue)
@@ -1395,7 +961,6 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
 
     print(subdomains)
     return subdomains
-
 
 def interactive():
     args = parse_args()
