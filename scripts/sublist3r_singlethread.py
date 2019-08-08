@@ -1345,8 +1345,6 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
     for enum in enums:
         print('running ...')
         enum.run()
-    for enum in enums:
-        print('extending:')
         print(enum.subdomains)
         subdomains_queue.extend(enum.subdomains)
 

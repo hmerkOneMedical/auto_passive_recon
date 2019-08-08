@@ -73,6 +73,8 @@ def recon():
     local = False
     if current_ip == '127.0.0.1:5000':
         local = True
+    else:
+        return flask.redirect(url_for('async_recon_report'), code=307)
 
     response = run_recon(company_url, company_name, None, False, local)
     details = response['details']
@@ -133,7 +135,8 @@ def report():
         ## REPLACE this with async request !
         #subdomains = get_subdomains(company_url)
         subdomains = getSubdomains(company_url, None, ports=None, silent=True, verbose=True, engines=None)
- 
+        print(subdomains)
+
         yield '<br>'
         domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
         yield domain_html(domain_results)

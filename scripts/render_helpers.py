@@ -320,7 +320,7 @@ def linkedin_details_inner(employees, jobs):
     for result in jobs:
         jobs_blob += '<tr>'
         jobs_blob += '<td>'+result['title']+'</td>'
-        jobs_blob += '<td><a target="_blank" href={{'+result['link']+'}}>LinkedIn</a></td>'
+        jobs_blob += '<td><a target="_blank" href=https://{{'+result['link']+'}}>LinkedIn</a></td>'
         jobs_blob += '<td>'+result['description']+'</td>'
         jobs_blob += '</tr>'
 
@@ -328,7 +328,7 @@ def linkedin_details_inner(employees, jobs):
     for result in employees:
         employees_blob += '<tr>'
         employees_blob += '<td>'+result['title']+'</td>'
-        employees_blob += '<td><a target="_blank" href={{'+result['link']+'}}>LinkedIn</a></td>'
+        employees_blob += '<td><a target="_blank" href=https://{{'+result['link']+'}}>LinkedIn</a></td>'
         employees_blob += '<td>'+result['description']+'</td>'
         employees_blob += '</tr>'
 
