@@ -371,6 +371,7 @@ class YahooEnum():
         domain_list = self.enumerate()
         for domain in domain_list:
             self.q.append(domain)
+            
 
     def check_max_pages(self, num):
         if self.MAX_PAGES == 0:
@@ -1342,11 +1343,12 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
     enums = [enum(domain, [], q=subdomains_queue, silent=silent, verbose=verbose) for enum in chosenEnums]
     for enum in enums:
         enum.run()
+    for enum in enums:
+        subdomains_queue.extend(enum.subdomains)
 
     subdomains = set(subdomains_queue)
     for subdomain in subdomains:
         search_list.add(subdomain)
-
 
     if subdomains:
         subdomains = sorted(subdomains, key=subdomain_sorting_key)
