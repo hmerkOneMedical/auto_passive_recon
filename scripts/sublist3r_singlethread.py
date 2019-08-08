@@ -1084,6 +1084,8 @@ class DNSdumpster():
             subdomain = link.strip()
             if not subdomain.endswith(self.domain):
                 print('maybe>')
+                print(subdomain)
+                self.subdomains.append(subdomain.strip())
                 continue
             if subdomain and subdomain not in self.subdomains and subdomain != self.domain:
                 self.subdomains.append(subdomain.strip())
