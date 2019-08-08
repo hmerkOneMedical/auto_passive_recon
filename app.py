@@ -102,7 +102,8 @@ def report():
 
     ## cannot at the moment run sublist3r when hosted. :(
     if current_ip != '127.0.0.1:5000':
-        return redirect(url_for('async_recon_report'), code=307))
+        return 'Incorrect endpoint hit'
+        #return redirect(url_for('async_recon_report'), code=307))
 
     def generate():
         yield report_header_html(company_name)
