@@ -294,10 +294,12 @@ class GoogleEnum():
                 if not link.startswith('http'):
                     link = "http://" + link
                 subdomain = urlparse.urlparse(link).netloc
-                if subdomain and subdomain not in self.subdomains and subdomain != self.domain:
-                    if self.verbose:
-                        print("%s%s: %s%s" % (R, self.engine_name, W, subdomain))
-                    self.subdomains.append(subdomain.strip())
+
+                self.subdomains.append(subdomain.strip())
+                # if subdomain and subdomain not in self.subdomains and subdomain != self.domain:
+                #     if self.verbose:
+                #         print("%s%s: %s%s" % (R, self.engine_name, W, subdomain))
+                #     self.subdomains.append(subdomain.strip())
         except Exception:
             pass
         return links_list
@@ -439,13 +441,17 @@ class YahooEnum():
                     link = "http://" + link
 
                 subdomain = urlparse.urlparse(link).netloc
-                if not subdomain.endswith(self.domain):
-                    continue
-                if subdomain and subdomain not in self.subdomains and subdomain != self.domain:
-                    if self.verbose:
-                        print("%s%s: %s%s" % (R, self.engine_name, W, subdomain))
+                self.subdomains.append(subdomain.strip())
+                if self.verbose:
+                    print("%s%s: %s%s" % (R, self.engine_name, W, subdomain))
 
-                    self.subdomains.append(subdomain.strip())
+                # if not subdomain.endswith(self.domain):
+                #     continue
+                # if subdomain and subdomain not in self.subdomains and subdomain != self.domain:
+                #     if self.verbose:
+                #         print("%s%s: %s%s" % (R, self.engine_name, W, subdomain))
+
+                #     self.subdomains.append(subdomain.strip())
         except Exception:
             pass
 
@@ -960,6 +966,7 @@ class NetcraftEnum():
             for link in links_list:
                 subdomain = urlparse.urlparse(link).netloc
                 if not subdomain.endswith(self.domain):
+                    self.subdomains.append(subdomain.strip())
                     continue
                 if subdomain and subdomain not in self.subdomains and subdomain != self.domain:
                     if self.verbose:
@@ -988,12 +995,9 @@ class DNSdumpster():
             'Accept-Encoding': 'gzip',
         }
 
-        print('INITIATED')
-
         return
 
     def get_response(self, response):
-        print('GOT RESPONSE.')
 
         if response is None:
             return 0
@@ -1028,7 +1032,6 @@ class DNSdumpster():
         headers = dict(self.headers)
         headers['Referer'] = 'https://dnsdumpster.com'
 
-        print('HERE')
         try:
             if req_method == 'GET':
                 resp = self.session.get(url, headers=headers, timeout=self.timeout)
@@ -1055,15 +1058,13 @@ class DNSdumpster():
         params = {'csrfmiddlewaretoken': token, 'targetip': self.domain}
         post_resp = self.req('POST', self.base_url, params)
 
-        print('in enumeration func')
-        print(post_resp)
 
         self.extract_domains(post_resp)
-        for subdomain in self.subdomains:
-            print(subdomain)
-            #t = threading.Thread(target=self.check_host, args=(subdomain,))
-            #t.start()
-            #t.join()
+        # for subdomain in self.subdomains:
+        #     print(subdomain)
+        #     #t = threading.Thread(target=self.check_host, args=(subdomain,))
+        #     #t.start()
+        #     #t.join()
         return self.subdomains
 
     def extract_domains(self, resp):
@@ -1074,16 +1075,13 @@ class DNSdumpster():
         links = []
         try:
             results_tbl = tbl_regex.findall(resp)[0]
-            print(results_tbl)
         except IndexError:
             results_tbl = ''
         links_list = link_regex.findall(results_tbl)
         links = list(set(links_list))
         for link in links:
-            print('pls')
             subdomain = link.strip()
             if not subdomain.endswith(self.domain):
-                print('maybe>')
                 print(subdomain)
                 self.subdomains.append(subdomain.strip())
                 continue
@@ -1187,6 +1185,7 @@ class ThreatCrowd():
             for link in links:
                 subdomain = link.strip()
                 if not subdomain.endswith(self.domain):
+                    self.subdomains.append(subdomain.strip())
                     continue
                 if subdomain not in self.subdomains and subdomain != self.domain:
                     if self.verbose:
@@ -1346,7 +1345,7 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
                         # 'passivedns': PassiveDNS
                          }
     
-    engines = 'dnsdumpster'#'baidu,yahoo,bing,dnsdumpster,netcraft,threatcrowd'
+    engines = 'baidu,yahoo,bing,dnsdumpster,netcraft,threatcrowd'
     chosenEnums = []
 
     if engines is None:
