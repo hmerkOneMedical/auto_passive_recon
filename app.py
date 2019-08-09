@@ -302,7 +302,7 @@ def async_recon_report():
         task = async_recon.apply_async(args=[company_url, company_name])
         task_indexed_url = url_for('report_details', task_id=task.id, _method='GET')
         res = send_report(company_name, task_indexed_url)
-        print(res)
+        print(res.text)
         return redirect(task_indexed_url)
 
     if request.method == 'GET':
