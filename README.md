@@ -58,6 +58,7 @@ heroku buildpacks:add --index 1 https://github.com/heroku/heroku-buildpack-chrom
 heroku buildpacks:add --index 2 https://github.com/heroku/heroku-buildpack-google-chrome
 
 heroku addons:create heroku-redis:hobby-dev --app app-name-here
+heroku addons:create mailgun:starter
 
 git add .
 git commit -m "fun message here"

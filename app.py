@@ -104,12 +104,7 @@ def report():
     company_url = request.form['company_url']
     company_name = (request.form['company_name']).lower()
 
-    ## cannot at the moment run sublist3r when hosted. :(
-    # if current_ip != '127.0.0.1:5000':
-    #     return 'Incorrect endpoint hit'
-    #     #return redirect(url_for('async_recon_report'), code=307))
-
-    if current_ip == '127.0.0.1:5000':
+    if current_ip == '127.0.0.1:5000': #we can run sublist3r!
         local = True
     else:
         return redirect(url_for('async_recon_report'), code=307)
@@ -280,13 +275,24 @@ def report_status(task_id):
         }
     return jsonify(response)
 
-@app.route('/launch_recon', methods=['POST'])
-def launch_recon():
-    url = str(request.json['url'])
-    url = url.replace(" ", "")
-    company_name = str(request.json['company_name'])
-    task = async_recon.apply_async(args=[url, company_name])
-    return jsonify({}), 202, {'Location': url_for('report_status', task_id=task.id)}
+# @app.route('/launch_recon', methods=['POST'])
+# def launch_recon():
+#     url = str(request.json['url'])
+#     url = url.replace(" ", "")
+#     company_name = str(request.json['company_name'])
+#     task = async_recon.apply_async(args=[url, company_name])
+#     return jsonify({}), 202, {'Location': url_for('report_status', task_id=task.id)}
+def send_report(company_name, message_url):
+    MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY', '')
+    MAILGUN_DOMAIN = os.environ.get('MAILGUN_DOMAIN', '')
+    MAILGUN_SMTP_LOGIN = os.environ.get('MAILGUN_SMTP_LOGIN', '')
+    return requests.post(
+		"https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages",
+		auth=("api", MAILGUN_API_KEY),
+		data={"from": "Automated Recon <" + MAILGUN_SMTP_LOGIN + ">",
+			"to": "App Sec <hmerk@onemedical.com>",
+			"subject": "Passive Recon Report: "+company_name,
+			"text": "New passsive recon started. Check progress and get report here: " + message_url})
 
 @app.route('/async_recon_report', methods=['POST'])
 def async_recon_report():
@@ -294,11 +300,10 @@ def async_recon_report():
         company_url = request.form['company_url']
         company_name = (request.form['company_name']).lower()
         task = async_recon.apply_async(args=[company_url, company_name])
-        #status_url = url_for('report_status', task_id=task.id)
         task_indexed_url = url_for('report_details', task_id=task.id, _method='GET')
+        res = send_report(company_name, task_indexed_url)
+        print(res)
         return redirect(task_indexed_url)
-
-        #return render_template('async_report.html', DOMAIN=company_url, company_name=company_name, STATUS_URL=status_url)
 
     if request.method == 'GET':
         return redirect(url_for('index'))

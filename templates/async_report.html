@@ -221,23 +221,6 @@
         });
 
         update_progress("{{STATUS_URL}}", nanobar, div[0])
-        // send ajax POST request to start background job
-        // $.ajax({
-        //   type: 'POST',
-        //   url: '/launch_recon',
-        //   data: JSON.stringify({
-        //     url: '{{DOMAIN}}',
-        //     company_name: '{{company_name}}',
-        //   }),
-        //   contentType: 'application/json;charset=UTF-8',
-        //   success: function(data, status, request) {
-        //     status_url = request.getResponseHeader('Location');
-        //     update_progress(status_url, nanobar, div[0]);
-        //   },
-        //   error: function() {
-        //     alert('Unexpected error');
-        //   },
-        // });
       }
       function update_progress(status_url, nanobar, status_div) {
         // send GET request to status URL
@@ -249,10 +232,6 @@
           $(status_div.childNodes[2]).text(data['status']);
 
           if ('result' in data) {
-            //$('.data-here').html(data['result']);
-            // if ('company_url' in data['result']) {
-            //     $('.company_url').html(data['result']['company_url']);
-            // }
             if ('company_name' in data['result']) {
                 $('.company_name').text('Passive Recon Report: ' + data['result']['company_name']);
             }
@@ -286,9 +265,6 @@
       }
 
     start_long_task();
-    
     </script>
-    <!-- <button id="start-bg-job" onclick="start_long_task()">Start
-            Long Calculation</button><br><br> -->
   </body>
 </html>
