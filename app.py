@@ -181,19 +181,22 @@ def get_subdomains_by_request(req):
 
 ## Actual task that finds content
 @celery.task(bind=True)
-def async_recon(self, url, company_name):
+def async_recon(self, company_url, company_name):
     """Background task retrieving subdomain information"""
     total = 10
     growing_inner = {}
     #growing_html = ''
     print('celery task under works')
-    print(url)
+    print(company_url)
+
+    growing_inner['company_url'] = company_url
+    growing_inner['company_name'] = company_name
     
-    self.update_state(state='PROGRESS', meta={'url': url, 'current': 1, 'total': total, 'status': 'Getting company basics', 'result': growing_inner})
+    self.update_state(state='PROGRESS', meta={'company_url': company_url, 'current': 1, 'total': total, 'status': 'Getting company basics', 'result': growing_inner})
 
     details = scrape_crunchbase.run_basics(company_name)
     #growing_html += details_html(details) 
-    whois_details = whois.whois(url)
+    whois_details = whois.whois(company_url)
     details['whois_details'] = whois_details
 
     growing_inner['company-details'] = company_details(details)
@@ -205,7 +208,7 @@ def async_recon(self, url, company_name):
     founder_emails = []
     if details:
         for founder in details['founders']:
-            founder_emails.append(hunter.get_work_email(url, founder))
+            founder_emails.append(hunter.get_work_email(company_url, founder))
 
    
     #growing_html += non_automated_checks(company_name, founder_emails)
@@ -225,13 +228,10 @@ def async_recon(self, url, company_name):
 
     self.update_state(state='PROGRESS', meta={'current': 5, 'total': total, 'status': 'Getting subdomains', 'result': growing_inner})
 
-    #subdomains = get_subdomains(url)
-    #subdomains.append(url)
+    #subdomains = get_subdomains(company_url)
+    #subdomains.append(company_url)
 
-    subdomains = getSubdomains(url, None, ports=None, silent=True, verbose=True, engines=None)
-
-    print("======================")
-    print(subdomains)
+    subdomains = getSubdomains(company_url, None, ports=None, silent=True, verbose=True, engines=None)
 
     self.update_state(state='PROGRESS', meta={'current': 6, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_inner})
 
@@ -288,15 +288,26 @@ def launch_recon():
     task = async_recon.apply_async(args=[url, company_name])
     return jsonify({}), 202, {'Location': url_for('report_status', task_id=task.id)}
 
-@app.route('/async_recon_report', methods=['GET', 'POST'])
+@app.route('/async_recon_report', methods=['POST'])
 def async_recon_report():
     if request.method == 'POST':
         company_url = request.form['company_url']
         company_name = (request.form['company_name']).lower()
-        return render_template('async_report.html', DOMAIN=company_url, company_name=company_name)
+        task = async_recon.apply_async(args=[company_url, company_name])
+        #status_url = url_for('report_status', task_id=task.id)
+        task_indexed_url = url_for('report_details', task_id=task.id, _method='GET')
+        return redirect(task_indexed_url)
+
+        #return render_template('async_report.html', DOMAIN=company_url, company_name=company_name, STATUS_URL=status_url)
 
     if request.method == 'GET':
         return redirect(url_for('index'))
+
+@app.route('/report_details/<task_id>', methods=['GET'])
+def report_details(task_id):
+    if request.method == 'GET':
+        status_url = url_for('report_status', task_id=task_id)
+        return render_template('async_report.html', STATUS_URL=status_url)
 
 if __name__ == '__main__':
     app.run()
