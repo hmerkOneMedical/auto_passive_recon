@@ -68,6 +68,8 @@ heroku ps:scale web=1
 heroku ps:scale worker=1
 ```
 
+Visit the heroku portal, navigate to your application, and click on Mailgun to configure the addon. You will have to manually allow the requested email recipient. On the mailgun dashboard, this is found under Sending -> Overview, on the right side.
+
 ### Alternative Options
 
 If you prefer your own redis url, skip the addon step, and configure the REDIS_URL config variable.

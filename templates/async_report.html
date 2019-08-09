@@ -1,24 +1,22 @@
 <!DOCTYPE html>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-
-
 <!-- Latest compiled and minified CSS -->
 <link
   rel="stylesheet"
   href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"
-/>
+  />
 
 <!-- jQuery library -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-
 <!-- Latest compiled JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
-
+<script
+  src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 <link
   href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css"
   rel="stylesheet"
-/>
-<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+  />
+<script
+  src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
 <!------ Include the above in your HEAD tag ---------->
 
 <html>
@@ -39,12 +37,12 @@
     <hr>
     <div
       style="width:30px; height: 30px; display: inline-block;
-            vertical-align:top;">
+      vertical-align:top;">
       <img
         src="https://www.onemedical.com/static/images/apple-touch-icon-180x180.png"
         style="max-width:100%;
-                max-height:100%;"
-      />
+        max-height:100%;"
+        />
     </div>
     <h1 class='company_name' style="display: inline-block; vertical-align:top;">
       Passive Recon Report:
@@ -54,16 +52,17 @@
       <hr>
       <h4><a target="_blank" href="/">Start Over</a></h4>
       <h4>
-        To submit report, open the print module (⌘P) and save as a PDF.<br />
-        Email Security@ and we will get back to you shortly!
+        This report will automatically be delivered to Appsec@. Feel free to
+        close the window and check back later for completion.<br />
       </h4>
 
       <!--<button onclick="start_long_task();">Start Long Calculation</button><br><br>-->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/nanobar/0.2.1/nanobar.min.js"></script>
+      <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/nanobar/0.2.1/nanobar.min.js"></script>
       <div id="progress"></div>
     </div>
     <hr />
-    
+
     <!-- Report details -->
     <div class="card" style="width: 100%; display: inline-block;
       vertical-align:top;">
@@ -103,40 +102,41 @@
       <hr />
       <!-- -->
 
-        <h3 style="page-break-before: always">Non-Automated Checks:</h3>
-        <div>
-            <div style="display: inline-block;width: 60%;" class="founder-emails-compro">
-                <h5 style="display: inline-block; vertical-align:top;">
-                    Have founder emails been compromised?
-                </h5>
-            </div>
-            <div style="display: inline-block; vertical-align:top; right: 40%;">
-                <input
-                type="checkbox"
-                data-toggle="toggle"
-                data-on="Yes"
-                data-off="No"
-                id="toggle_pwned"
-                />
-            </div>
+      <h3 style="page-break-before: always">Non-Automated Checks:</h3>
+      <div>
+        <div style="display: inline-block;width: 60%;"
+          class="founder-emails-compro">
+          <h5 style="display: inline-block; vertical-align:top;">
+            Have founder emails been compromised?
+          </h5>
         </div>
-        <h5 style="display: inline-block; width: 60%; vertical-align:top;">Have
-            there been previous security breaches?</h5>
         <div style="display: inline-block; vertical-align:top; right: 40%;">
-        <input
+          <input
             type="checkbox"
             data-toggle="toggle"
             data-on="Yes"
             data-off="No"
-            id="toggle_breach"
+            id="toggle_pwned"
             />
         </div>
-        <br>
-        <div class="dontprint">
+      </div>
+      <h5 style="display: inline-block; width: 60%; vertical-align:top;">Have
+        there been previous security breaches?</h5>
+      <div style="display: inline-block; vertical-align:top; right: 40%;">
+        <input
+          type="checkbox"
+          data-toggle="toggle"
+          data-on="Yes"
+          data-off="No"
+          id="toggle_breach"
+          />
+      </div>
+      <br>
+      <div class="dontprint">
         <iframe style="outline:none;width: 500px;height: 500px;"
-            src="https://www.google.com/search?igu=1&ei=&q={{company_name}}+breach"
-            style=></iframe>
-        </div>
+          src="https://www.google.com/search?igu=1&ei=&q={{company_name}}+breach"
+          style=></iframe>
+      </div>
     </div>
     <script>
     $(function() {
@@ -150,7 +150,6 @@
         })
     })
     </script>
-
     <div class="domain-details">
       <h3>Domain Details</h3>
       <h5 style="display: inline-block; width: 60%; vertical-align:top;">
@@ -164,7 +163,7 @@
           data-on="Yes"
           data-off="No"
           id="toggle_vuln"
-        />
+          />
       </div>
       <script>
         $(function() {
@@ -193,7 +192,7 @@
           data-on="Yes"
           data-off="No"
           id="toggle_staff"
-        />
+          />
       </div>
       <br />
       <div class="linkedin-details-inner">LOADING...</div>
@@ -206,7 +205,6 @@
         });
     });
     </script>
-
     <script>
       function start_long_task() {
         // add task status elements

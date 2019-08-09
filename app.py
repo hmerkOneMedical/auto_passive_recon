@@ -286,13 +286,14 @@ def send_report(company_name, message_url):
     MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY', '')
     MAILGUN_DOMAIN = os.environ.get('MAILGUN_DOMAIN', '')
     MAILGUN_SMTP_LOGIN = os.environ.get('MAILGUN_SMTP_LOGIN', '')
+    HOSTED_IP = os.environ.get('HOSTED_IP', '')
     return requests.post(
 		"https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages",
 		auth=("api", MAILGUN_API_KEY),
 		data={"from": "Automated Recon <" + MAILGUN_SMTP_LOGIN + ">",
 			"to": "App Sec <hmerk@onemedical.com>",
 			"subject": "Passive Recon Report: "+company_name,
-			"text": "New passsive recon started. Check progress and get report here: " + message_url})
+			"text": "New passsive recon started. Check progress and get report here: " + HOSTED_IP + message_url})
 
 @app.route('/async_recon_report', methods=['POST'])
 def async_recon_report():
