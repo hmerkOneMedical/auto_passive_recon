@@ -40,8 +40,8 @@ ma = Marshmallow(app)
 class Report(db.Model):
     __tablename__ = "reports"
     report_id = db.Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False)
-    company_name = db.Column(db.String(120), unique=False, default=False)
-    company_url = db.Column(db.String(120), unique=False, default=False)
+    company_name = db.Column(db.String(120), unique=False)
+    company_url = db.Column(db.String(120), unique=False)
     is_complete = db.Column(db.Boolean, unique=False, default=False)
     result = db.Column(db.PickleType)    
 
@@ -65,7 +65,7 @@ class ReportsSchema(ma.Schema):
         fields = ('report_id', 'company_name', 'company_url')
 
 report_schema = ReportSchema()
-reports_schema = ReportsSchema()
+reports_schema = ReportsSchema(many=True)
 
 # Initialize Redis + Celery
 redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
@@ -339,7 +339,7 @@ def async_recon_report():
         company_url = request.form['company_url']
         company_name = (request.form['company_name']).lower()
         task = async_recon.apply_async(args=[company_url, company_name])
-        task_indexed_url = url_for('reports', report_id=task.id, _method='GET')
+        task_indexed_url = url_for('report_details', report_id=task.id, _method='GET')
         
         # initializes value in postgres
         report = Report(report_id=task.id, company_name=company_name, company_url=company_url)
@@ -352,18 +352,29 @@ def async_recon_report():
     if request.method == 'GET':
         return redirect(url_for('index'))
 
-@app.route('/reports/<report_id>', methods=['GET'])
+@app.route('/report_details/<report_id>', methods=['GET'])
 def report_details(report_id):
     if request.method == 'GET':
         status_url = url_for('report_status', report_id=report_id)
         return render_template('async_report.html', STATUS_URL=status_url)
 
-@app.route('/reports', methods=['GET'])
-def report_index():
+@app.route('/all_reports', methods=['GET'])
+def all_reports():
     if request.method == 'GET':
-        all_reports = report = Report.query.all()
-        results = reports_schema.dump(all_reports)
-        return render_template('report_index.html', RESULTS=results)
+        all_reports = Report.query.all()
+        try:
+            results = reports_schema.dump(all_reports)
+            print(results.data)
+        except:
+            pass
+
+        try:
+            results = reports_schema.jsonify(all_reports)
+            print(results.data)
+        except:
+            pass
+        
+        return render_template('all_reports.html', RESULTS=all_reports)
 
 if __name__ == '__main__':
     app.run()
