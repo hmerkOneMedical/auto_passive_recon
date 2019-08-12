@@ -151,7 +151,7 @@ def report():
     def generate():
         yield report_header_html(company_name)
 
-        details = scrape_crunchbase.run_basics(company_name)
+        details = scrape_crunchbase.run_basics(company_name, False)
         whois_details = whois.whois(company_url)
         details['whois_details'] = whois_details
         
@@ -225,7 +225,7 @@ def async_recon(self, company_url, company_name):
     
     self.update_state(state='PROGRESS', meta={'company_url': company_url, 'current': 1, 'total': total, 'status': 'Getting company basics', 'result': growing_inner})
 
-    details = scrape_crunchbase.run_basics(company_name)
+    details = scrape_crunchbase.run_basics(company_name, False)
     whois_details = whois.whois(company_url)
     details['whois_details'] = whois_details
 
@@ -276,7 +276,7 @@ def report_status(report_id):
             'status': 'COMPLETED',
             'current': 1,
             'total': 1,
-            'result': report.result
+            'result': report.result,
         }
         return jsonify(response)
 
@@ -325,13 +325,16 @@ def send_report(company_name, message_url):
     MAILGUN_DOMAIN = os.environ.get('MAILGUN_DOMAIN', '')
     MAILGUN_SMTP_LOGIN = os.environ.get('MAILGUN_SMTP_LOGIN', '')
     HOSTED_IP = os.environ.get('HOSTED_IP', '')
+
+    message_body = "New passsive recon started! Check progress and get report here: " + HOSTED_IP + message_url
+    message_body += "\nCheck out past reports here: " + HOSTED_IP + "/all_reports"
     return requests.post(
 		"https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages",
 		auth=("api", MAILGUN_API_KEY),
 		data={"from": "Automated Recon <" + MAILGUN_SMTP_LOGIN + ">",
 			"to": "App Sec <hmerk@onemedical.com>",
 			"subject": "Passive Recon Report: "+company_name,
-			"text": "New passsive recon started! Check progress and get report here: " + HOSTED_IP + message_url})
+			"text": message_body})
 
 @app.route('/async_recon_report', methods=['POST'])
 def async_recon_report():
@@ -356,7 +359,8 @@ def async_recon_report():
 def report_details(report_id):
     if request.method == 'GET':
         status_url = url_for('report_status', report_id=report_id)
-        return render_template('async_report.html', STATUS_URL=status_url)
+        report = Report.query.get(report_id)
+        return render_template('async_report.html', STATUS_URL=status_url, company_name=report.company_name)
 
 @app.route('/all_reports', methods=['GET'])
 def all_reports():

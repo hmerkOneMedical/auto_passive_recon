@@ -82,14 +82,18 @@ def company_basic_info(name):
         return None
 
 
-def run_basics(company_name):
+def run_basics(company_name, interactive):
     run = True
     while run:
         basics = (company_basic_info(company_name))
         format_print_response('Basic Company Information (Crunchbase)', basics, [])
+        
         if not basics:
-            company_name = formatInput('Update company name to try again:')    
-            if len(company_name) == 0:
+            if interactive:
+                company_name = formatInput('Update company name to try again:')    
+                if len(company_name) == 0:
+                    run = False
+            else:
                 run = False
         else:
             run = False

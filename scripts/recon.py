@@ -22,7 +22,7 @@ def run_recon(company_url, company_name, subdomain_out_file, interactive, run_su
     run_sublist3r='yes'
     unwanted_keys = ['rank', 'keyword']
 
-    details = scrape_crunchbase.run_basics(company_name)
+    details = scrape_crunchbase.run_basics(company_name, interactive)
 
     founder_emails = []
     if details:
