@@ -209,10 +209,6 @@ def report():
 # upgrade worker
 # launch redis db.
 
-def get_subdomains_by_request(req):
-    url = base_url + '/'
-    requests.get()
-
 ## Actual task that finds content
 @celery.task(bind=True)
 def async_recon(self, company_url, company_name):
