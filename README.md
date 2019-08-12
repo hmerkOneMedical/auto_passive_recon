@@ -48,8 +48,6 @@ Visit [127.0.0.1:5000/](http://127.0.0.1:5000/)
 
 ### Setup
 
-To deploy, ensure you have added backpacks to support selenium / chrome driver.
-
 ```
 heroku login
 heroku create app-name-here
@@ -57,9 +55,9 @@ heroku create app-name-here
 heroku buildpacks:add --index 1 https://github.com/heroku/heroku-buildpack-chromedriver
 heroku buildpacks:add --index 2 https://github.com/heroku/heroku-buildpack-google-chrome
 
-heroku addons:create heroku-redis:hobby-dev --app app-name-here
-heroku addons:create mailgun:starter
+heroku addons:create heroku-redis:hobby-dev --maxmemory_policy allkeys-lru --app app-name-here
 
+heroku addons:create mailgun:starter
 heroku addons:add heroku-postgresql:hobby-dev
 
 git add .
