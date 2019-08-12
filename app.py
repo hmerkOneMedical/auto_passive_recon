@@ -4,6 +4,7 @@ __author__ = 'helena merk'
 
 from flask import Flask, render_template, request, Response, jsonify, url_for, redirect
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.dialects.postgresql import UUID
 from flask_heroku import Heroku
 from flask_marshmallow import Marshmallow
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -29,7 +30,7 @@ from scripts.sublist1r import getSubdomains
 
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-
+heroku = Heroku(app)
 
 # Initialize Postgres and SQLAlchemy
 db = SQLAlchemy(app)
@@ -38,8 +39,8 @@ ma = Marshmallow(app)
 # Create our database model
 class Report(db.Model):
     __tablename__ = "reports"
-    report_id = Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False)
-    is_complete = Column(Boolean, unique=False, default=False)
+    report_id = db.Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False)
+    is_complete = db.Column(db.Boolean, unique=False, default=False)
     result = db.Column(db.PickleType)    
 
     def __repr__(self):
@@ -52,7 +53,7 @@ class Report(db.Model):
 class ReportSchema(ma.Schema):
     class Meta:
         # Fields to expose
-        fields = ('result')
+        fields = ('report_id', 'result')
 
 report_schema = ReportSchema()
 
@@ -273,15 +274,14 @@ def report_status(report_id):
     # check if is_complete returns true from postgres. else, check async result.
     report = Report.query.get(report_id)
     print('REPORT FINDING HERE')
-    print(report)
     if (report and report.is_complete):
-        res = report_schema.jsonify(report)
+        #res = report_schema.jsonify(report)
         response = {
             'state': 'COMPLETED',
             'status': 'COMPLETED',
             'current': 1,
             'total': 1,
-            'result': res
+            'result': report.result
         }
         print('returning from postgres hehe')
         return jsonify(response)
@@ -304,7 +304,6 @@ def report_status(report_id):
             'result': task.info.get('result', {})
         }
     elif task.state != 'FAILURE':
-        
         response = {
             'state': task.state,
             'status': 'COMPLETED',
@@ -313,7 +312,7 @@ def report_status(report_id):
         }
         if 'result' in task.info:
             ## update db info
-            report.result = response['result']
+            report.result = task.info['result']
             report.is_complete = True
             db.session.commit()
             ##
@@ -328,13 +327,6 @@ def report_status(report_id):
         }
     return jsonify(response)
 
-# @app.route('/launch_recon', methods=['POST'])
-# def launch_recon():
-#     url = str(request.json['url'])
-#     url = url.replace(" ", "")
-#     company_name = str(request.json['company_name'])
-#     task = async_recon.apply_async(args=[url, company_name])
-#     return jsonify({}), 202, {'Location': url_for('report_status', report_id=task.id)}
 def send_report(company_name, message_url):
     MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY', '')
     MAILGUN_DOMAIN = os.environ.get('MAILGUN_DOMAIN', '')

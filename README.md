@@ -60,12 +60,19 @@ heroku buildpacks:add --index 2 https://github.com/heroku/heroku-buildpack-googl
 heroku addons:create heroku-redis:hobby-dev --app app-name-here
 heroku addons:create mailgun:starter
 
+heroku addons:add heroku-postgresql:hobby-dev
+
 git add .
 git commit -m "fun message here"
 git push heroku master
 
 heroku ps:scale web=1
 heroku ps:scale worker=1
+
+heroku run python
+>>> from app import db
+>>> db.create_all()
+>>> exit()
 ```
 
 Visit the heroku portal, navigate to your application, and click on Mailgun to configure the addon. You will have to manually allow the requested email recipient. On the mailgun dashboard, this is found under Sending -> Overview, on the right side.
