@@ -40,14 +40,18 @@ ma = Marshmallow(app)
 class Report(db.Model):
     __tablename__ = "reports"
     report_id = db.Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False)
+    company_name = db.Column(db.String(120), unique=False, default=False)
+    company_url = db.Column(db.String(120), unique=False, default=False)
     is_complete = db.Column(db.Boolean, unique=False, default=False)
     result = db.Column(db.PickleType)    
 
     def __repr__(self):
         return '<Report id %r>' % self.report_id
 
-    def __init__(self, report_id):
+    def __init__(self, report_id, company_name, company_url):
         self.report_id = report_id
+        self.company_name = company_name
+        self.company_url = company_url
         self.is_complete = False
 
 class ReportSchema(ma.Schema):
@@ -55,7 +59,13 @@ class ReportSchema(ma.Schema):
         # Fields to expose
         fields = ('report_id', 'result')
 
+class ReportsSchema(ma.Schema):
+    class Meta:
+        # Fields to expose
+        fields = ('report_id', 'company_name', 'company_url')
+
 report_schema = ReportSchema()
+reports_schema = ReportsSchema()
 
 # Initialize Redis + Celery
 redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
@@ -101,7 +111,6 @@ def recon():
     current_ip = os.environ.get('HOSTED_IP', '127.0.0.1:5000')
 
     local = False
-    print(current_ip)
     if current_ip == '127.0.0.1:5000':
         local = True
     else:
@@ -210,9 +219,6 @@ def async_recon(self, company_url, company_name):
     """Background task retrieving subdomain information"""
     total = 10
     growing_inner = {}
-    #growing_html = ''
-    print('celery task under works')
-    print(company_url)
 
     growing_inner['company_url'] = company_url
     growing_inner['company_name'] = company_name
@@ -220,14 +226,12 @@ def async_recon(self, company_url, company_name):
     self.update_state(state='PROGRESS', meta={'company_url': company_url, 'current': 1, 'total': total, 'status': 'Getting company basics', 'result': growing_inner})
 
     details = scrape_crunchbase.run_basics(company_name)
-    #growing_html += details_html(details) 
     whois_details = whois.whois(company_url)
     details['whois_details'] = whois_details
 
     growing_inner['company-details'] = company_details(details)
     self.update_state(state='PROGRESS', meta={'current': 2, 'total': total, 'status': 'Getting summary', 'result': growing_inner})
     
-    #growing_html += report_summary_html()
     self.update_state(state='PROGRESS', meta={'current': 3, 'total': total, 'status': 'Getting founders', 'result': growing_inner})
 
     founder_emails = []
@@ -236,7 +240,6 @@ def async_recon(self, company_url, company_name):
             founder_emails.append(hunter.get_work_email(company_url, founder))
 
    
-    #growing_html += non_automated_checks(company_name, founder_emails)
     growing_inner['founder-emails-compro'] = founder_emails_compro(company_name, founder_emails)
     self.update_state(state='PROGRESS', meta={'current': 4, 'total': total, 'status': 'Getting subdomains', 'result': growing_inner})
 
@@ -246,23 +249,17 @@ def async_recon(self, company_url, company_name):
         scrape_jobs_query = google_scraper.query(
             'site:www.linkedin.com/jobs \'' + company_name + '\' security cyber', 10)
 
-        #growing_html += linkedin_details_html(scrape_employees_query, scrape_jobs_query)
         growing_inner['linkedin-details-inner'] = linkedin_details_inner(scrape_employees_query, scrape_jobs_query)
     except:
         growing_inner['linkedin-details-inner'] = 'Google has blocked this query :/'
 
     self.update_state(state='PROGRESS', meta={'current': 5, 'total': total, 'status': 'Getting subdomains', 'result': growing_inner})
 
-    #subdomains = get_subdomains(company_url)
-    #subdomains.append(company_url)
-
     subdomains = getSubdomains(company_url, None, ports=None, silent=True, verbose=True, engines=None)
 
     self.update_state(state='PROGRESS', meta={'current': 6, 'total': total, 'status': 'Getting subdomain vulnerabilities', 'result': growing_inner})
 
-    domain_results = query_shodan.add_domain_details(subdomains) #str(domain_results)
-
-    #growing_html += domain_html(domain_results)
+    domain_results = query_shodan.add_domain_details(subdomains)
     growing_inner['domain-details-inner'] = domain_details_inner(domain_results)
 
     return {'state': 'COMPLETED', 'current': 100, 'total': 100, 'status': 'Task completed!', 'result': growing_inner}
@@ -273,9 +270,7 @@ def async_recon(self, company_url, company_name):
 def report_status(report_id):
     # check if is_complete returns true from postgres. else, check async result.
     report = Report.query.get(report_id)
-    print('REPORT FINDING HERE')
     if (report and report.is_complete):
-        #res = report_schema.jsonify(report)
         response = {
             'state': 'COMPLETED',
             'status': 'COMPLETED',
@@ -283,7 +278,6 @@ def report_status(report_id):
             'total': 1,
             'result': report.result
         }
-        print('returning from postgres hehe')
         return jsonify(response)
 
     ## get async report 
@@ -315,7 +309,6 @@ def report_status(report_id):
             report.result = task.info['result']
             report.is_complete = True
             db.session.commit()
-            ##
 
             response['result'] = task.info['result']
     else: # error
@@ -346,25 +339,31 @@ def async_recon_report():
         company_url = request.form['company_url']
         company_name = (request.form['company_name']).lower()
         task = async_recon.apply_async(args=[company_url, company_name])
-        task_indexed_url = url_for('report_details', report_id=task.id, _method='GET')
+        task_indexed_url = url_for('reports', report_id=task.id, _method='GET')
         
         # initializes value in postgres
-        report = Report(report_id=task.id)
+        report = Report(report_id=task.id, company_name=company_name, company_url=company_url)
         db.session.add(report)
         db.session.commit()
         
         res = send_report(company_name, task_indexed_url)
-        print(res.text)
         return redirect(task_indexed_url)
 
     if request.method == 'GET':
         return redirect(url_for('index'))
 
-@app.route('/report_details/<report_id>', methods=['GET'])
+@app.route('/reports/<report_id>', methods=['GET'])
 def report_details(report_id):
     if request.method == 'GET':
         status_url = url_for('report_status', report_id=report_id)
         return render_template('async_report.html', STATUS_URL=status_url)
+
+@app.route('/reports', methods=['GET'])
+def report_index():
+    if request.method == 'GET':
+        all_reports = report = Report.query.all()
+        results = reports_schema.dump(all_reports)
+        return render_template('report_index.html', RESULTS=results)
 
 if __name__ == '__main__':
     app.run()

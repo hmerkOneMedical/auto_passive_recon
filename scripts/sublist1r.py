@@ -655,8 +655,6 @@ class DNSdumpster(enumratorBase):
         return self.subdomains
 
     def extract_domains(self, resp):
-        print('extracting value func could be broken')
-
         tbl_regex = re.compile('<a name="hostanchor"><\/a>Host Records.*?<table.*?>(.*?)</table>', re.S)
         link_regex = re.compile('<td class="col-md-4">(.*?)<br>', re.S)
         links = []
@@ -669,7 +667,6 @@ class DNSdumpster(enumratorBase):
         for link in links:
             subdomain = link.strip()
             if not subdomain.endswith(self.domain):
-                print(subdomain)
                 self.subdomains.append(subdomain.strip())
                 continue
             if subdomain and subdomain not in self.subdomains and subdomain != self.domain:
@@ -960,7 +957,6 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
             for subdomain in subdomains:
                 print(G + subdomain + W)
 
-    print(subdomains)
     return subdomains
 
 def interactive():

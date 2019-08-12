@@ -4,9 +4,6 @@ def get_subdomains(url):
     url = 'https://api.spyse.com/v1/subdomains?domain=' + url
     response = requests.get(url)
     data = response.json()
-    
-    print(data)
-    #response = {}
     response = []
     
     if 'records' in data:
