@@ -3,6 +3,10 @@
 __author__ = 'helena merk'
 
 from flask import Flask, render_template, request, Response, jsonify, url_for, redirect
+from flask_sqlalchemy import SQLAlchemy
+from flask_heroku import Heroku
+from flask_marshmallow import Marshmallow
+from werkzeug.security import generate_password_hash, check_password_hash
 from celery import Celery
 
 import json
@@ -26,13 +30,38 @@ from scripts.sublist1r import getSubdomains
 app = Flask(__name__, static_url_path='/static')
 app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
-redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 
+# Initialize Postgres and SQLAlchemy
+db = SQLAlchemy(app)
+ma = Marshmallow(app)
+
+# Create our database model
+class Report(db.Model):
+    __tablename__ = "reports"
+    report_id = Column(UUID(as_uuid=True), primary_key=True, unique=True, nullable=False)
+    is_complete = Column(Boolean, unique=False, default=False)
+    result = db.Column(db.PickleType)    
+
+    def __repr__(self):
+        return '<Report id %r>' % self.report_id
+
+    def __init__(self, report_id):
+        self.report_id = report_id
+        self.is_complete = False
+
+class ReportSchema(ma.Schema):
+    class Meta:
+        # Fields to expose
+        fields = ('result')
+
+report_schema = ReportSchema()
+
+# Initialize Redis + Celery
+redis_url = os.environ.get('REDIS_URL', 'redis://localhost:6379/0')
 
 app.config['CELERY_BROKER_URL'] = redis_url
 app.config['CELERY_RESULT_BACKEND'] = redis_url
 
-# Initialize Celery
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
@@ -157,10 +186,10 @@ def report():
 # 2. START CELERY TASK WITH ARGUMENTS
 #     // can happen anywhere. return endpoint for status checks
 #     task = celery_task_func.apply_async(args=(arg1, arg2))
-#     return jsonify({}), 202, {'Location': url_for('STATUS_ENDPOINT', task_id=task.id)}
+#     return jsonify({}), 202, {'Location': url_for('STATUS_ENDPOINT', report_id=task.id)}
 
-# 3. STATUS_ENDPOINT/<task_id>
-#     task = celery_task_func.AsyncResult(task_id)
+# 3. STATUS_ENDPOINT/<report_id>
+#     task = celery_task_func.AsyncResult(report_id)
 #     from task.state, determine what response should be. Reformat, etc.
 #     return jsonify(response)
  
@@ -239,9 +268,26 @@ def async_recon(self, company_url, company_name):
 
 
 # returns status of recon attempt 
-@app.route('/report_status/<task_id>')
-def report_status(task_id):
-    task = async_recon.AsyncResult(task_id)
+@app.route('/report_status/<report_id>')
+def report_status(report_id):
+    # check if is_complete returns true from postgres. else, check async result.
+    report = Report.query.get(report_id)
+    print('REPORT FINDING HERE')
+    print(report)
+    if (report and report.is_complete):
+        res = report_schema.jsonify(report)
+        response = {
+            'state': 'COMPLETED',
+            'status': 'COMPLETED',
+            'current': 1,
+            'total': 1,
+            'result': res
+        }
+        print('returning from postgres hehe')
+        return jsonify(response)
+
+    ## get async report 
+    task = async_recon.AsyncResult(report_id)
     if task.state == 'STARTED':
         response = {
             'state': task.state,
@@ -258,6 +304,7 @@ def report_status(task_id):
             'result': task.info.get('result', {})
         }
     elif task.state != 'FAILURE':
+        
         response = {
             'state': task.state,
             'status': 'COMPLETED',
@@ -265,6 +312,12 @@ def report_status(task_id):
             'total': 2,
         }
         if 'result' in task.info:
+            ## update db info
+            report.result = response['result']
+            report.is_complete = True
+            db.session.commit()
+            ##
+
             response['result'] = task.info['result']
     else: # error
         response = {
@@ -281,7 +334,7 @@ def report_status(task_id):
 #     url = url.replace(" ", "")
 #     company_name = str(request.json['company_name'])
 #     task = async_recon.apply_async(args=[url, company_name])
-#     return jsonify({}), 202, {'Location': url_for('report_status', task_id=task.id)}
+#     return jsonify({}), 202, {'Location': url_for('report_status', report_id=task.id)}
 def send_report(company_name, message_url):
     MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY', '')
     MAILGUN_DOMAIN = os.environ.get('MAILGUN_DOMAIN', '')
@@ -293,7 +346,7 @@ def send_report(company_name, message_url):
 		data={"from": "Automated Recon <" + MAILGUN_SMTP_LOGIN + ">",
 			"to": "App Sec <hmerk@onemedical.com>",
 			"subject": "Passive Recon Report: "+company_name,
-			"text": "New passsive recon started. Check progress and get report here: " + HOSTED_IP + message_url})
+			"text": "New passsive recon started! Check progress and get report here: " + HOSTED_IP + message_url})
 
 @app.route('/async_recon_report', methods=['POST'])
 def async_recon_report():
@@ -301,7 +354,13 @@ def async_recon_report():
         company_url = request.form['company_url']
         company_name = (request.form['company_name']).lower()
         task = async_recon.apply_async(args=[company_url, company_name])
-        task_indexed_url = url_for('report_details', task_id=task.id, _method='GET')
+        task_indexed_url = url_for('report_details', report_id=task.id, _method='GET')
+        
+        # initializes value in postgres
+        report = Report(report_id=task.id)
+        db.session.add(report)
+        db.session.commit()
+        
         res = send_report(company_name, task_indexed_url)
         print(res.text)
         return redirect(task_indexed_url)
@@ -309,10 +368,10 @@ def async_recon_report():
     if request.method == 'GET':
         return redirect(url_for('index'))
 
-@app.route('/report_details/<task_id>', methods=['GET'])
-def report_details(task_id):
+@app.route('/report_details/<report_id>', methods=['GET'])
+def report_details(report_id):
     if request.method == 'GET':
-        status_url = url_for('report_status', task_id=task_id)
+        status_url = url_for('report_status', report_id=report_id)
         return render_template('async_report.html', STATUS_URL=status_url)
 
 if __name__ == '__main__':

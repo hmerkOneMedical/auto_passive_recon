@@ -235,7 +235,7 @@ def domain_html(subdomains):
                         <th>IP Address</th>
                         <th>Ports</th>
                         <th>Built With</th>
-                        <th>Vulnerabilities</th>
+                        <th style="width: 150px">Vulnerabilities</th>
                     </tr>
                 </thead>
                 <tbody>
