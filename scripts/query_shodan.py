@@ -2,6 +2,7 @@ import shodan
 import os
 import json
 import requests
+import threading
 
 from helpers import *
 
@@ -20,66 +21,75 @@ def dns_resolve(hostnames):
 
 
 def add_domain_details(subdomains):
+    threads = list()
     domainDict = domainsToIPs(subdomains)
     ipResults = []
     for key, value in domainDict.iteritems():
-        vulns = []
         domainIps = domainDict[key]
-        ports = []
-
         if len(domainIps) == 0:
             continue; # if site does not have an ip address, do not add it to reported subdomains!
 
-        liveURL = False
-        for ip in domainIps:
-            try:
-                res = api.host(ip)
-                #[u'data', u'city', u'region_code', u'tags', u'ip', u'isp', u'area_code', u'dma_code', u'last_update', u'country_code3', u'latitude', u'hostnames', u'postal_code', u'longitude', u'country_code', u'org', u'country_name', u'ip_str', u'os', u'asn', u'ports']
-                if 'ports' in res.keys():
-                    ports.extend(res['ports'])
-                    liveURL = True
+        x = threading.Thread(target=threaded_domain, args=(domainIps,key, ipResults))
+        threads.append(x)
+        x.start()
 
-                if 'vulns' in res.keys():
-                    vulns.extend(res['vulns'])
-                    liveURL = True
+    for thread in (threads):
+        thread.join()
 
-                if 'data' in res.keys():
-                    liveURL = True
-                    try:
-                        for x in res['data']:
-                            if 'vulns' in x['opts']:
-                                # print('updating!')
-                                # print x['opts']['vulns']
-                                try:
-                                    vulns = vulns.extend(x['opts']['vulns'])
-                                except:
-                                    pass
-                            if 'http' in x.keys():
-                                # print '[+] HTTP port present:\t'
-                                # print '\tTitle: %s' % x['http']['title']
-                                # print '\tRobots: %s' % x['http']['robots']
-                                # print '\tServer: %s' % x['http']['server']
-                                # print '\tComponents: %s' % x['http']['components']
-                                # print '\tSitemap: %s' % x['http']['sitemap']
-
-                                liveURL = True
-                    except:
-                        pass
-
-            except:
-                pass
-
-        if liveURL:
-            if vulns == None:
-                vulns = []
-            
-            builtwith_results = get_technical_details(key)
-            addition = {'url': key, 'ips': domainDict[key], 'vulns': vulns, 'ports': remove_dups(ports), 'builtwith': builtwith_results}
-            ipResults.append(addition)
-            print(addition)
-
-    print('RETURNING VALUES HERE')
     return ipResults
+
+def threaded_domain(domainIps, key, ipResults):    
+    vulns = []
+    ports = []
+
+    liveURL = False
+    for ip in domainIps:
+        try:
+            res = api.host(ip)
+            #[u'data', u'city', u'region_code', u'tags', u'ip', u'isp', u'area_code', u'dma_code', u'last_update', u'country_code3', u'latitude', u'hostnames', u'postal_code', u'longitude', u'country_code', u'org', u'country_name', u'ip_str', u'os', u'asn', u'ports']
+            if 'ports' in res.keys():
+                ports.extend(res['ports'])
+                liveURL = True
+
+            if 'vulns' in res.keys():
+                vulns.extend(res['vulns'])
+                liveURL = True
+
+            if 'data' in res.keys():
+                liveURL = True
+                try:
+                    for x in res['data']:
+                        if 'vulns' in x['opts']:
+                            # print('updating!')
+                            # print x['opts']['vulns']
+                            try:
+                                vulns = vulns.extend(x['opts']['vulns'])
+                            except:
+                                pass
+                        if 'http' in x.keys():
+                            # print '[+] HTTP port present:\t'
+                            # print '\tTitle: %s' % x['http']['title']
+                            # print '\tRobots: %s' % x['http']['robots']
+                            # print '\tServer: %s' % x['http']['server']
+                            # print '\tComponents: %s' % x['http']['components']
+                            # print '\tSitemap: %s' % x['http']['sitemap']
+
+                            liveURL = True
+                except:
+                    pass
+
+        except:
+            pass
+
+    if liveURL:
+        if vulns == None:
+            vulns = []
+        
+        builtwith_results = get_technical_details(key)
+        addition = {'url': key, 'ips': domainIps, 'vulns': vulns, 'ports': remove_dups(ports), 'builtwith': builtwith_results}
+        ipResults.append(addition)
+        print(addition)
+
 
 def remove_dups(duped):
     return list(dict.fromkeys(duped))

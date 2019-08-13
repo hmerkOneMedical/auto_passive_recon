@@ -11,6 +11,7 @@ import argparse
 import time
 import hashlib
 import random
+import threading
 import socket
 import json
 from collections import Counter
@@ -139,20 +140,24 @@ class enumratorBase(object):
         self.engine_name = engine_name
         self.silent = silent
         self.verbose = verbose
+        self.q = q
         self.headers = {
               'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
               'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
               'Accept-Language': 'en-US,en;q=0.8',
               'Accept-Encoding': 'gzip',
           }
-        self.q = q
+        self.lock = threading.Lock()
 
         self.print_banner()
 
     def run(self):
+        self.lock.acquire()
         domain_list = self.enumerate()
         for domain in domain_list:
             self.q.append(domain)
+
+        self.lock.release()
 
     def print_(self, text):
         if not self.silent:
@@ -594,6 +599,7 @@ class DNSdumpster(enumratorBase):
         self.engine_name = "DNSdumpster"
         self.live_subdomains = []
         self.timeout = 25
+        self.lock = threading.BoundedSemaphore(value=70)
         
         enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
 
@@ -647,11 +653,11 @@ class DNSdumpster(enumratorBase):
 
 
         self.extract_domains(post_resp)
-        # for subdomain in self.subdomains:
-        #     print(subdomain)
-        #     #t = threading.Thread(target=self.check_host, args=(subdomain,))
-        #     #t.start()
-        #     #t.join()
+        for subdomain in self.subdomains:
+            print(subdomain)
+            t = threading.Thread(target=self.check_host, args=(subdomain,))
+            t.start()
+            t.join()
         return self.subdomains
 
     def extract_domains(self, resp):
@@ -721,7 +727,7 @@ class ThreatCrowd(enumratorBase):
     def __init__(self, domain, subdomains=None, q=None, silent=False, verbose=True):
         self.base_url = 'https://www.threatcrowd.org/searchApi/v2/domain/report/?domain={domain}'
         self.engine_name = "ThreatCrowd"
-        
+        self.lock = threading.Lock()
         enumratorBase.__init__(self, self.base_url, self.engine_name, domain, subdomains, q, silent, verbose)
 
         return
@@ -928,10 +934,17 @@ def getSubdomains(domain, savefile, ports, silent, verbose, engines):
                 chosenEnums.append(supported_engines[engine.lower()])
 
     # Start the engines enumeration
+    threads = list()
     enums = [enum(domain, [], q=subdomains_queue, silent=silent, verbose=verbose) for enum in chosenEnums]
     for enum in enums:
-        enum.run()
-        subdomains_queue.extend(enum.subdomains)
+        x = threading.Thread(target=enum.run)
+        threads.append(x)
+        x.start()
+    for thread in threads:
+        thread.join()
+
+        #enum.run()
+        #subdomains_queue.extend(enum.subdomains)
 
     subdomains = set(subdomains_queue)
     for subdomain in subdomains:
