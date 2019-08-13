@@ -364,7 +364,6 @@ def all_reports():
         all_reports = Report.query.all()
         try:
             results = reports_schema.dump(all_reports)
-            print(results.data)
         except:
             pass
 

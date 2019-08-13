@@ -37,9 +37,12 @@ def format_response(res):
         print('no founders found')
     online = res['overview_fields2']
 
-    employeeCount = res['overview_fields']['num_employees_enum']
-    employeeCount = employeeCount.split('_')
-    employeeCount = conver_count(employeeCount[1]) + ' - ' + conver_count(employeeCount[2])
+    try:
+        employeeCount = res['overview_fields']['num_employees_enum']
+        employeeCount = employeeCount.split('_')
+        employeeCount = conver_count(employeeCount[1]) + ' - ' + conver_count(employeeCount[2])
+    except:
+        employeeCount = 'unknown (likely small)'
 
     for b in range(len(companyBasics)):
         if not isinstance(companyBasics[b], str):

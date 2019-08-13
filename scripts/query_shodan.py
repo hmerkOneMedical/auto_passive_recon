@@ -31,7 +31,7 @@ def add_domain_details(subdomains):
 
         x = threading.Thread(target=threaded_domain, args=(domainIps,key, ipResults))
         threads.append(x)
-        x.start()
+        x.start() 
 
     for thread in (threads):
         thread.join()
