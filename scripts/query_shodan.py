@@ -45,25 +45,32 @@ def threaded_domain(domainIps, key, ipResults):
     liveURL = False
     for ip in domainIps:
         try:
+            
             res = api.host(ip)
+            print(res)
             #[u'data', u'city', u'region_code', u'tags', u'ip', u'isp', u'area_code', u'dma_code', u'last_update', u'country_code3', u'latitude', u'hostnames', u'postal_code', u'longitude', u'country_code', u'org', u'country_name', u'ip_str', u'os', u'asn', u'ports']
             if 'ports' in res.keys():
                 ports.extend(res['ports'])
                 liveURL = True
 
             if 'vulns' in res.keys():
+                print('VULNS FOUND')
+                print(res['vulns'])
                 vulns.extend(res['vulns'])
                 liveURL = True
+                
+                print('HERE')
+                print(vulns)
 
             if 'data' in res.keys():
                 liveURL = True
                 try:
                     for x in res['data']:
                         if 'vulns' in x['opts']:
-                            # print('updating!')
-                            # print x['opts']['vulns']
+                            print('updating!')
+                            print x['opts']['vulns']
                             try:
-                                vulns = vulns.extend(x['opts']['vulns'])
+                                vulns.extend(x['opts']['vulns'])
                             except:
                                 pass
                         if 'http' in x.keys():
@@ -81,6 +88,8 @@ def threaded_domain(domainIps, key, ipResults):
         except:
             pass
 
+    print('vulns made it?')
+    print(vulns)
     if liveURL:
         if vulns == None:
             vulns = []
@@ -95,9 +104,13 @@ def remove_dups(duped):
     return list(dict.fromkeys(duped))
 
 def find_ip_vulnerabilities(ip):
+    print(ip)
+    print('???')
+    return ip
     try:
         result = api.host(ip)
         respSet = set([])
+        print(result['vulns'])
         for i in range(0, len(result['data'])):
             try:
                 res = (result['data'][i]['vulns'].keys())

@@ -29,7 +29,12 @@ def format_response(res):
         locations = (res['overview_fields']['location_group_identifiers'])
     except:
         locations = []
-    founded_on = res['overview_fields']['founded_on']['value']
+
+    try:
+        founded_on = res['overview_fields']['founded_on']['value']
+    except:
+        founded_on = ''
+
     founders = []
     try: 
         founders = res['overview_fields']['founder_identifiers']
@@ -48,8 +53,10 @@ def format_response(res):
         if not isinstance(companyBasics[b], str):
             companyBasics[b] = companyBasics[b]['value']
 
+    
     companyBasics = ', '.join(companyBasics)
-
+    companyBasics = ' '.join((companyBasics.split('_')))
+    
     location = ''
     for loc in locations:
         loc = loc['value']
