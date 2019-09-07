@@ -7,9 +7,11 @@ An attempt to gain information about targeted company without actively engaging.
 Passive recon script integrating several tools:
 
 - whois
+- [spyse](http://spyse.com/)
 - [sublist3r](https://github.com/aboul3la/Sublist3r)
 - [shodan](https://www.shodan.io/)
 - google scraping
+
 
 \*\* Note: Heroku has a request timeout of 30 seconds, requiring celery workers to run scripts asyncronously. However, these do not permit threading. Sublist3r depends on multithreading, so in order to get the most accurate results, run this in command line or on localhost. The hosted heroku app used a different subdomain enumeration tool which provides less results.
 
