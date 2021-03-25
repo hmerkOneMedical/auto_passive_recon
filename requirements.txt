@@ -1,7 +1,7 @@
 requests==2.22.0
 beautifulsoup4==4.7.1
 dnspython==1.16.0
-PyYAML==5.1.1
+PyYAML==5.4
 shodan==1.13.0
 Flask==1.1.1
 Flask-SQLAlchemy==2.4.0
